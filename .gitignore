@@ -2,9 +2,12 @@
 node_modules/
 /.pnp
 .pnp.js
-
+.yarn/
+/.yarn/cache/
+*.gz
 # Testing
 /coverage
+/backend/.yarn/install-state.gz
 
 # Next.js
 /.next/
@@ -32,3 +35,4 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+
