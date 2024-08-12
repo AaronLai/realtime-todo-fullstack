@@ -1,4 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
+import {CreateDateColumn, UpdateDateColumn } from 'typeorm';
+
 import { User } from './user.entity';
 import { UserProjectRole } from './user-project-role.entity';
 import { Task } from './task.entity';
@@ -13,6 +15,13 @@ export class Project {
 
   @Column()
   description: string;
+  
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+  
 
   @ManyToOne(() => User, user => user.createdProjects)
   createdBy: User;

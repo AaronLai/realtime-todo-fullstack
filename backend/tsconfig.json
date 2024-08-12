@@ -24,11 +24,17 @@
       "@auth/auth/*": [
         "libs/auth/src/*"
       ],
-      "@data/data": [
+      "@data": [
         "libs/data/src"
       ],
-      "@data/data/*": [
+      "@data/*": [
         "libs/data/src/*"
+      ],
+      "@utils": [
+        "libs/shared/src/utils"
+      ],
+      "@utils/*": [
+        "libs/shared/src/utils/*"
       ]
     }
   }

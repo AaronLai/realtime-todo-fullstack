@@ -11,6 +11,7 @@
     "start": "nest start",
     "start:dev": "NODE_ENV=local nest start user --watch",
     "user:start:local": "NODE_ENV=local nest start user --watch",
+    "project:start:local": "NODE_ENV=local nest start project --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/apps/backend/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
@@ -28,9 +29,13 @@
     "@nestjs/microservices": "^10.3.10",
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/swagger": "^7.4.0",
     "@nestjs/typeorm": "^10.0.2",
     "@types/passport-jwt": "^4.0.1",
     "@types/passport-local": "^1.0.38",
+    "argon2": "^0.40.3",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
@@ -84,7 +89,8 @@
     ],
     "moduleNameMapper": {
       "^@auth/auth(|/.*)$": "<rootDir>/libs/auth/src/$1",
-      "^@dara/data(|/.*)$": "<rootDir>/libs/data/src/$1"
+      "^@dara/data(|/.*)$": "<rootDir>/libs/data/src/$1",
+      "^@utils/shared(|/.*)$": "<rootDir>/libs/shared/src/$1"
     }
   }
 }

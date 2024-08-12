@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne , CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { User } from './user.entity';
 import { Project } from './project.entity';
 
@@ -18,6 +18,14 @@ export class Task {
 
   @Column({ type: 'date' })
   dueDate: Date;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  
 
   @ManyToOne(() => Project, project => project.tasks)
   project: Project;
