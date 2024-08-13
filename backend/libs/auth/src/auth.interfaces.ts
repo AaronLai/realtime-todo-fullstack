@@ -1,6 +1,6 @@
 
 export interface UserData {
-  id: string | number;
+  id: string ;
   username: string;
   // Add any other fields that your user object contains, except password
 }

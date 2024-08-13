@@ -1,11 +1,16 @@
 import { Injectable } from '@nestjs/common';
+import { EventPattern } from '@nestjs/microservices';
 import { DataService } from '@data/data.service';
 import { Response } from '@utils/response';
 import { Project } from '@data/entities/project.entity';
+import { rabbitmqConfig } from '@shared';
+import { User } from '@data/entities/user.entity';
 
 @Injectable()
 export class ProjectService {
-  constructor(private dataService: DataService) {}
+  constructor(private dataService: DataService) { }
+
+
 
   async createProject(projectData: Partial<Project>): Promise<Response> {
     try {
