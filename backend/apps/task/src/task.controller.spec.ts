@@ -41,7 +41,8 @@ describe('TaskController', () => {
         createdById: 'test-user-id',
         tags: ['test', 'task'],  // Optional, but included for completeness
         assignedToId: 'test-assigned-id'  // Optional, but included for completeness
-      };  const user = { userId: 'test-user-id' };
+      };
+        const user = { userId: 'test-user-id' };
       const expectedResponse = Response.success({ ...taskData, id: 'test-task-id' }, 201);
 
       jest.spyOn(taskService, 'createTask').mockResolvedValue(expectedResponse);

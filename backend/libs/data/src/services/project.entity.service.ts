@@ -31,5 +31,4 @@ export class ProjectEntityService {
     return this.projectRepository.find();
   }
 
-  // Add other project-related methods as needed...
 }

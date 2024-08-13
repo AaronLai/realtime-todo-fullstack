@@ -1,12 +1,14 @@
-
 import { title } from "@/components/primitives";
+import dynamic from 'next/dynamic';
+
+// Dynamically import the client-side component
+const AuthForm = dynamic(() => import('../../components/auth-form'), { ssr: false });
 
 export default function AuthPage() {
   return (
-    <div>
-      <h1 className={title()}>Authentication</h1>
-      {/* Add your authentication form or components here */}
-      <p>Login and registration forms go here.</p>
+    <div className="flex flex-col items-center justify-start w-full">
+      <h1 className={title({ color: "violet" })}>Authentication</h1>
+      <AuthForm />
     </div>
   );
 }
