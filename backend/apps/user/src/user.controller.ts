@@ -28,4 +28,5 @@ export class UserController {
   async register(@Body() userData: RegisterDto) {
     return this.userService.registerUser(userData.username, userData.password);
   }
+  
 }

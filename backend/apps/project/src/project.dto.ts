@@ -2,6 +2,7 @@
 
 import { IsString, IsNotEmpty, IsOptional, IsNumber } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { User } from '../../../libs/data/src/entities/user.entity';
 
 export class CreateProjectDto {
   @ApiProperty()
@@ -13,6 +14,11 @@ export class CreateProjectDto {
   @IsString()
   @IsOptional()
   description?: string;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsOptional()
+  createdBy: number; // Assuming we'll use the user's ID
 
   // Add other properties as needed
 }
@@ -44,5 +50,12 @@ export class ProjectResponseDto {
   @IsString()
   description: string;
 
-}
+  @ApiProperty()
+  createdBy: User;
 
+  @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
+}

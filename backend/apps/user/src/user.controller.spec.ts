@@ -52,6 +52,7 @@ describe('UserController', () => {
       const registerRoute = Reflect.getMetadata('__pipes__', UserController.prototype.register);
       expect(registerRoute).toBeDefined();
       expect(registerRoute[0]).toBeInstanceOf(ValidationPipe);
+      
       expect(registerRoute[0].options).toEqual({ whitelist: true });
     });
   });

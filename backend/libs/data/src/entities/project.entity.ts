@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
-import {CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 import { User } from './user.entity';
 import { UserProjectRole } from './user-project-role.entity';
@@ -7,8 +7,8 @@ import { Task } from './task.entity';
 
 @Entity('projects')
 export class Project {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column()
   name: string;
@@ -22,7 +22,6 @@ export class Project {
   @UpdateDateColumn()
   updatedAt: Date;
   
-
   @ManyToOne(() => User, user => user.createdProjects)
   createdBy: User;
 

@@ -2,8 +2,9 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DataService } from './data.service';
-import { UserEntityService } from './services/user.entity.services';
+import { UserEntityService } from './services/user.entity.service';
 import { ProjectEntityService } from './services/project.entity.service';
+import { TaskEntityService } from './services/task.entity.service';
 import { User } from './entities/user.entity';
 import { Task } from './entities/task.entity';
 import { Project } from './entities/project.entity';
@@ -31,7 +32,7 @@ import { Repository } from 'typeorm';
     }),
     TypeOrmModule.forFeature([User, Task, Project, UserProjectRole, Role, RolePermission, Permission]),
   ],
-  providers: [Repository, DataService, UserEntityService,ProjectEntityService],
+  providers: [Repository, DataService, UserEntityService,ProjectEntityService,TaskEntityService],
   exports: [TypeOrmModule, DataService,],
 })
 export class DatabaseModule { }

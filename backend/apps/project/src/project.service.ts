@@ -16,7 +16,7 @@ export class ProjectService {
     }
   }
 
-  async getProject(id: number): Promise<Response> {
+  async getProject(id: string): Promise<Response> {
     try {
       const project = await this.dataService.findProject(id);
       if (!project) {
@@ -28,7 +28,7 @@ export class ProjectService {
     }
   }
 
-  async updateProject(id: number, projectData: Partial<Project>): Promise<Response> {
+  async updateProject(id: string, projectData: Partial<Project>): Promise<Response> {
     try {
       const updatedProject = await this.dataService.updateProject(id, projectData);
       if (!updatedProject) {
@@ -40,7 +40,7 @@ export class ProjectService {
     }
   }
 
-  async deleteProject(id: number): Promise<Response> {
+  async deleteProject(id: string): Promise<Response> {
     try {
       await this.dataService.deleteProject(id);
       return Response.success('Project deleted successfully');

@@ -1,5 +1,3 @@
-// backend/libs/data/src/services/projectEntity.service.ts
-
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
@@ -12,7 +10,7 @@ export class ProjectEntityService {
     private projectRepository: Repository<Project>,
   ) {}
 
-  async findProject(id: number): Promise<Project> {
+  async findProject(id: string): Promise<Project> {
     return this.projectRepository.findOne({ where: { id } });
   }
 
@@ -20,12 +18,12 @@ export class ProjectEntityService {
     return this.projectRepository.save(project);
   }
 
-  async updateProject(id: number, projectData: Partial<Project>): Promise<Project> {
+  async updateProject(id: string, projectData: Partial<Project>): Promise<Project> {
     await this.projectRepository.update(id, projectData);
     return this.findProject(id);
   }
 
-  async deleteProject(id: number): Promise<void> {
+  async deleteProject(id: string): Promise<void> {
     await this.projectRepository.delete(id);
   }
 
