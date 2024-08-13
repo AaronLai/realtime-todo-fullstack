@@ -26,6 +26,7 @@
 		"@react-aria/visually-hidden": "3.8.12",
 		"axios": "^1.7.3",
 		"clsx": "2.1.1",
+		"cookies-next": "^4.2.1",
 		"framer-motion": "^11.3.24",
 		"intl-messageformat": "^10.5.0",
 		"next": "14.2.4",

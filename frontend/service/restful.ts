@@ -1,7 +1,7 @@
-
 import axios, { AxiosResponse } from 'axios';
+import { setCookie } from 'cookies-next';
 
-const API_BASE_URL = 'http://localhost:4001';
+const API_BASE_URL = 'http://localhost:4001/users';
 
 interface ApiResponse<T> {
   status: number;
@@ -25,7 +25,6 @@ async function apiCall<T>(endpoint: string, method: string, body?: any): Promise
       method,
       data: body,
     });
-
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
@@ -36,7 +35,36 @@ async function apiCall<T>(endpoint: string, method: string, body?: any): Promise
 }
 
 export const api = {
-  signin: (username: string, password: string) => 
-    apiCall<{ user: any; token: string }>('/signin', 'POST', { username, password }),
+  signin: async (username: string, password: string) => {
+    const response = await apiCall<{ user: any; token: string }>('/signin', 'POST', { username, password });
+    if (response.status === 200 && response.data.token) {
+      console.log('Signin done response:', response.status , response.data);
+
+      setCookie('authToken', response.data.token, {
+        httpOnly: false,
+        secure: process.env.NODE_ENV !== 'development',
+        sameSite: 'strict',
+        path: '/',
+      });
+    }
+    
+    return response;
+  },
+  
+  signup: async (username: string, password: string) => {
+    const response = await apiCall<{ user: any; token: string }>('/register', 'POST', { username, password });
+    if (response.status === 200 && response.data.token) {
+      console.log('Signup done response:', response.status, response.data);
+
+      setCookie('authToken', response.data.token, {
+        httpOnly: false,
+        secure: process.env.NODE_ENV !== 'development',
+        sameSite: 'strict',
+        path: '/',
+      });
+    }
+    
+    return response;
+  },
   // Add other API calls here as needed
 };

@@ -35,7 +35,7 @@ export default function RootLayout({
   return (
     <html suppressHydrationWarning lang="en">
       <head />
-      <body
+      <body suppressHydrationWarning
         className={clsx(
           "min-h-screen bg-background font-sans antialiased",
           fontSans.variable,
@@ -55,7 +55,7 @@ export default function RootLayout({
                 title="nextui.org homepage"
               >
                 <span className="text-default-600">Powered by</span>
-                <p className="text-primary">NextUI</p>
+                <p className="text-primary">Aaron</p>
               </Link>
             </footer>
           </div>
