@@ -141,6 +141,23 @@ export const api = {
       { baseURL: PROJECT_API_BASE_URL }
     );
   },
-
+  assignRoleToUser: async (projectId: string, role: string, username: string): Promise<ApiResponse<any>> => {
+    return apiCall<any>(
+      `/${projectId}/assign/${role}`,
+      'POST',
+      { username },
+      true,
+      { baseURL: PROJECT_API_BASE_URL }
+    );
+  },
+  getProjectUsers: async (projectId: string): Promise<ApiResponse<any[]>> => {
+    return apiCall<any[]>(
+      `/${projectId}/users`,
+      'GET',
+      undefined,
+      true,
+      { baseURL: PROJECT_API_BASE_URL }
+    );
+  },
   // Add other API calls here as needed
 };

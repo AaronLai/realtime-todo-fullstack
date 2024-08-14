@@ -12,6 +12,11 @@ export function middleware(request: NextRequest) {
   // Check if the requested path is public
   const isPublicPath = publicPaths.some(path => request.nextUrl.pathname.startsWith(path))
 
+  // If the path is /, redirect to /board
+  if (request.nextUrl.pathname === '/') {
+    return NextResponse.redirect(new URL('/board', request.url))
+  }
+
   // If authenticated and trying to access /auth, redirect to /board
   if (isAuthenticated && request.nextUrl.pathname.startsWith('/auth')) {
     return NextResponse.redirect(new URL('/board', request.url))

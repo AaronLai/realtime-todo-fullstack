@@ -36,7 +36,7 @@ export default function AuthForm() {
       if (response.status === 200) {
         if (isLogin && response.data.token) {
           console.log("Login successful!");
-          router.push('/board'); // Redirect to the board page
+          window.location.href = '/board';
         } else if (!isLogin) {
           console.log("Registration successful!");
           setMessage("Registration successful! Please login.");

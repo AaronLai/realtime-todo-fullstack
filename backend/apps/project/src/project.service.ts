@@ -73,6 +73,52 @@ export class ProjectService {
     });
   }
 
+
+  async assignUserToProjectWithRole(username: string, projectId: string, role: string): Promise<Response> {
+    return await this.entityManager.transaction(async transactionalEntityManager => {
+      try {
+        // Fetch user
+        const user = await transactionalEntityManager.findOne(User, { where: { username: username } });
+        if (!user) {
+          return Response.notFound('User not found');
+        }
+  
+        // Fetch project
+        const project = await transactionalEntityManager.findOne(Project, { where: { id: projectId } });
+        if (!project) {
+          return Response.notFound('Project not found');
+        }
+  
+        // Check if user is already assigned to the project
+        const existingAssignment = await transactionalEntityManager.findOne(UserProjectRole, {
+          where: { user: { username: username }, project: { id: projectId } }
+        });
+        if (existingAssignment) {
+          return Response.error('User is already assigned to this project', 400);
+        }
+  
+        // Find the specified role
+        const specifiedRole = await transactionalEntityManager.findOne(Role, { where: { name: role } });
+        if (!specifiedRole) {
+          return Response.error(`Role "${role}" not found`, 400);
+        }
+  
+        // Create UserProjectRole
+        const userProjectRole = new UserProjectRole();
+        userProjectRole.user = user;
+        userProjectRole.project = project;
+        userProjectRole.role = specifiedRole;
+  
+        await transactionalEntityManager.save(UserProjectRole, userProjectRole);
+  
+        return Response.success(`User successfully assigned to project with role "${role}"`);
+      } catch (error) {
+        console.error('Error in assignUserToProject:', error);
+        return Response.error('Failed to assign user to project', 500);
+      }
+    });
+  }
+
   async getProject(id: string): Promise<Response> {
     try {
       const project = await this.dataService.findProject(id);
@@ -131,6 +177,32 @@ export class ProjectService {
     } catch (error) {
       console.error('Error in getProjectsByUserId:', error);
       return error instanceof Error ? error : new Error('An error occurred while fetching projects');
+    }
+  }
+  async getUsersForProject(projectId: string): Promise<Response> {
+    try {
+      const project = await this.entityManager.findOne(Project, { where: { id: projectId } });
+      
+      if (!project) {
+        return Response.notFound('Project not found');
+      }
+  
+      const userProjectRoles = await this.entityManager.find(UserProjectRole, {
+        where: { project: { id: projectId } },
+        relations: ['user', 'role'],
+        order: { user: { username: 'ASC' } }
+      });
+  
+      const users = userProjectRoles.map(upr => ({
+        id: upr.user.id,
+        username: upr.user.username,
+        role: upr.role.name
+      }));
+  
+      return Response.success(users);
+    } catch (error) {
+      console.error('Error in getUsersForProject:', error);
+      return Response.error('Failed to fetch users for the project', 500);
     }
   }
   

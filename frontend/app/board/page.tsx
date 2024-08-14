@@ -1,9 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Tabs, Tab, Card, CardBody, Button, Textarea, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Input } from "@nextui-org/react";
+import { Tabs, Tab, Card, CardBody, Button, Textarea, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Input, Avatar, Select, SelectItem } from "@nextui-org/react";
 import { PlusIcon } from "lucide-react";
 import { api } from "@/service/restful";
-import { Task } from '../../types';
+import { Task, User } from '../../types';
 import AddTaskForm from '../../components/add-task-form';
 import TaskCard from '../../components/task-card';
 
@@ -18,17 +18,38 @@ const BoardPage: React.FC = () => {
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
   const [newProjectName, setNewProjectName] = useState("");
+  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  const [newUsername, setNewUsername] = useState("");
+  const [users, setUsers] = useState<User[]>([]);
+  const [newUserRole, setNewUserRole] = useState("");
+
 
   useEffect(() => {
     fetchProjects();
   }, []);
 
+
+
   useEffect(() => {
     if (selectedProject) {
       fetchTasks(selectedProject);
+      fetchProjectUsers(selectedProject);
+
     }
   }, [selectedProject]);
 
+  const fetchProjectUsers = async (projectId: string) => {
+    try {
+      const response = await api.getProjectUsers(projectId);
+      if (response.status === 200 && Array.isArray(response.data)) {
+        setUsers(response.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch project users:", error);
+    }
+  };
+
+  
   const fetchProjects = async () => {
     try {
       const response = await api.getProjects();
@@ -104,6 +125,62 @@ const BoardPage: React.FC = () => {
     }
   };
 
+  // New component for avatar list
+  const AvatarList: React.FC<{ users: User[] }> = ({ users }) => (
+    <div className="flex gap-3 items-center mb-8">
+      {users.map((user) => (
+        <Avatar
+          isBordered
+          key={user.id}
+          name={user.username}
+        />
+      ))}
+       <Button
+        isIconOnly
+        color="primary"
+        className="text-default-500"
+        radius="full"
+        size="md"
+        onClick={() => setIsAddUserModalOpen(true)}
+        endContent={<PlusIcon size={16} color="white" />}
+      />
+    </div>
+  );
+
+
+
+  const handleAddUser = async () => {
+    if (!newUsername.trim() || !newUserRole || !selectedProject) {
+      console.error("Username, role, and selected project are required");
+      return;
+    }
+  
+    try {
+      // First, create the user (you might need to adjust this part based on your actual user creation API)
+      const newUser: User = {
+        id: (users.length + 1).toString(),
+        username: newUsername.trim()
+      };
+  
+      // Then, assign the role to the user
+      const response = await api.assignRoleToUser(selectedProject, newUserRole, newUsername.trim());
+  
+      if (response.status === 200) {
+        setUsers([...users, newUser]);
+        setNewUsername("");
+        setNewUserRole("");
+        setIsAddUserModalOpen(false);
+        console.log(`User ${newUsername} added with role ${newUserRole} to project ${selectedProject}`);
+      } else {
+        console.error('Failed to assign role to user:', response.error);
+      }
+    } catch (error) {
+      console.error("Failed to add user or assign role:", error);
+    }
+  };
+  const roles = ["Admin", "Member", "Viewer"];
+
+
   const handleAddProject = async () => {
     if (!newProjectName.trim()) {
       console.error("Project name cannot be empty");
@@ -111,7 +188,7 @@ const BoardPage: React.FC = () => {
     }
 
     try {
-      const response = await api.createProject({ name: newProjectName , description: ""});
+      const response = await api.createProject({ name: newProjectName, description: "" });
       if (response.status === 201 && response.data) {
         setProjects(prevProjects => [...prevProjects, response.data]);
         setSelectedProject(response.data.id);
@@ -154,6 +231,9 @@ const BoardPage: React.FC = () => {
       {selectedProject && (
         <div className="mt-4 w-full">
           <h3 className="text-xl font-semibold mb-4">{projects.find(p => p.id === selectedProject)?.name}</h3>
+          <AvatarList users={users} />
+
+
           {tasks.length === 0 ? (
             <p className="mt-4">No tasks yet. Add some above!</p>
           ) : (
@@ -194,6 +274,43 @@ const BoardPage: React.FC = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      <Modal isOpen={isAddUserModalOpen} onClose={() => setIsAddUserModalOpen(false)}>
+        <ModalContent>
+          <ModalHeader>Add New User</ModalHeader>
+          <ModalBody>
+            <Input
+              label="Username"
+              placeholder="Enter username"
+              value={newUsername}
+              onChange={(e) => setNewUsername(e.target.value)}
+              className="mb-4"
+            />
+            <Select
+              label="Role"
+              placeholder="Select a role"
+              value={newUserRole}
+              onChange={(e) => setNewUserRole(e.target.value)}
+            >
+              {roles.map((role) => (
+                <SelectItem key={role} value={role}>
+                  {role}
+                </SelectItem>
+              ))}
+            </Select>
+          </ModalBody>
+          <ModalFooter>
+            <Button color="danger" variant="light" onClick={() => setIsAddUserModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button color="primary" onClick={handleAddUser}>
+              Add User
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+
     </div>
   );
 };

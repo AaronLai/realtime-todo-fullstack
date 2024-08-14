@@ -16,6 +16,7 @@ import { Input } from "@nextui-org/input";
 import { link as linkStyles } from "@nextui-org/theme";
 import NextLink from "next/link";
 import clsx from "clsx";
+import { AuthButton } from './auth-button';
 
 import { siteConfig } from "@/config/site";
 import { ThemeSwitch } from "@/components/theme-switch";
@@ -33,26 +34,6 @@ export const Navbar = () => {
   const authToken = cookieStore.get('authToken');
   const isLoggedIn = !!authToken;
 
-  const searchInput = (
-    <Input
-      aria-label="Search"
-      classNames={{
-        inputWrapper: "bg-default-100",
-        input: "text-sm",
-      }}
-      endContent={
-        <Kbd className="hidden lg:inline-block" keys={["command"]}>
-          K
-        </Kbd>
-      }
-      labelPlacement="outside"
-      placeholder="Search..."
-      startContent={
-        <SearchIcon className="text-base text-default-400 pointer-events-none flex-shrink-0" />
-      }
-      type="search"
-    />
-  );
 
   return (
     <NextUINavbar maxWidth="xl" position="sticky">
@@ -79,27 +60,7 @@ export const Navbar = () => {
         
        
         <NavbarItem className="hidden md:flex">
-          {isLoggedIn ? (
-            
-            <form action="/api/logout" method="POST">
-              <Button
-                type="submit"
-                className="text-sm font-normal text-default-600 bg-default-100"
-                variant="flat"
-              >
-                Logout
-              </Button>
-            </form>
-          ) : (
-            <Link href="/login">
-              <Button
-                className="text-sm font-normal text-default-600 bg-default-100"
-                variant="flat"
-              >
-                Login
-              </Button>
-            </Link>
-          )}
+        <AuthButton initialIsLoggedIn={isLoggedIn} />
         </NavbarItem>
       </NavbarContent>
 
@@ -112,7 +73,6 @@ export const Navbar = () => {
       </NavbarContent>
 
       <NavbarMenu>
-        {searchInput}
         <div className="mx-4 mt-2 flex flex-col gap-2">
           {siteConfig.navMenuItems.map((item, index) => (
             <NavbarMenuItem key={`${item}-${index}`}>
@@ -132,17 +92,8 @@ export const Navbar = () => {
             </NavbarMenuItem>
           ))}
           <NavbarMenuItem>
-            {isLoggedIn ? (
-              <form action="/api/logout" method="POST">
-                <Button type="submit" color="danger" size="lg">
-                  Logout
-                </Button>
-              </form>
-            ) : (
-              <Link color="primary" href="/login" size="lg">
-                Login
-              </Link>
-            )}
+         <AuthButton initialIsLoggedIn={isLoggedIn} />
+
           </NavbarMenuItem>
         </div>
       </NavbarMenu>

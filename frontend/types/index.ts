@@ -24,3 +24,7 @@ export interface Task {
   assignedToId?: string;
   createdById?: string;
 }
+export interface User {
+  id: string;
+  username: string;
+}

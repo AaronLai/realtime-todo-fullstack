@@ -37,6 +37,31 @@ export class ProjectController {
       return Response.error('An error occurred while creating the project', 500);
     }
   }
+
+  @Post(':id/assign/:role')
+  @ApiOperation({ summary: 'Assign a user to a project' })
+  @ApiParam({ name: 'id', type: 'string', description: 'Project UUID' })
+  @ApiBody({ schema: { type: 'object', properties: { username: { type: 'string' } } } })
+  @ApiResponse({ status: 200, description: 'The user has been successfully assigned to the project.' })
+  @ApiResponse({ status: 400, description: 'Bad Request.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @ApiResponse({ status: 404, description: 'Project or User not found.' })
+  @UseGuards(JwtAuthGuard)
+  async assignUserToProject(
+    @Param('id') projectId: string,
+    @Param('role') role: string,
+    @Body('username') username: string
+  ): Promise<Response> {
+    try {
+      const result = await this.projectService.assignUserToProjectWithRole(username, projectId,role);
+      return result;
+    } catch (error) {
+      return Response.error('An error occurred while assigning the user to the project', 500);
+    }
+  }
+
+
+
   @EventPattern(rabbitmqConfig.routingKeys.projectRouting)
   async handleProjectMessages(data: any) {
     console.log('Received project message:', data);
@@ -94,6 +119,20 @@ export class ProjectController {
   ): Promise<Response> {
     return this.projectService.updateProject(id, updateProjectDto);
   }
+
+  @Get(':id/users')
+  @ApiOperation({ summary: 'Get users for a project' })
+  @ApiParam({ name: 'id', type: 'string', description: 'Project UUID' })
+  @ApiResponse({ status: 200, description: 'Users for the project retrieved successfully.' })
+  @ApiResponse({ status: 404, description: 'Project not found.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @UseGuards(JwtAuthGuard)
+  async getUsersForProject(@Param('id') projectId: string): Promise<Response> {
+    return this.projectService.getUsersForProject(projectId);
+  }
+
+
+  
 }
 
 
