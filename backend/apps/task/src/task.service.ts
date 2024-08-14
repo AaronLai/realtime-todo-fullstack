@@ -8,11 +8,14 @@ export class TaskService {
   constructor(private dataService: DataService) {}
 
   async createTask(taskData: Partial<Task>): Promise<Response> {
+    console.log('TaskService -> createTask -> taskData', taskData);
     try {
       const task = await this.dataService.createTask(taskData);
       return Response.success(task, 201);
     } catch (error) {
-      return Response.error('Failed to create task', 500);
+      console.log('TaskService -> createTask -> error', error);
+
+      return Response.error(error, 500);
     }
   }
 

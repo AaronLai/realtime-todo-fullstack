@@ -4,7 +4,7 @@ import { TaskService } from './task.service';
 import { Response } from '@utils/response';
 import { JwtAuthGuard } from '@auth/auth/jwt-auth.guard';
 import { UserPayload } from '@auth/auth/auth.decorator';
-import { CreateTaskDto, UpdateTaskDto, TaskResponseDto } from './task.dto';
+import { CreateTaskDto, UpdateTaskDto, TaskResponseDto , TaskStatus } from './task.dto';
 
 @ApiTags('tasks')
 @ApiBearerAuth()
@@ -22,8 +22,12 @@ export class TaskController {
   async createTask(@UserPayload() user: any, @Body() taskData: CreateTaskDto): Promise<Response> {
     const taskWithCreator = {
       ...taskData,
-      createdById: user.userId
+      status:[TaskStatus.TODO],
+      createdById: user.userId,
+   
     };
+
+    console.log('Task with creator', taskWithCreator);
     return this.taskService.createTask(taskWithCreator);
   }
 

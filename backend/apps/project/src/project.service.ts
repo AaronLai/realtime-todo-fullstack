@@ -105,38 +105,33 @@ export class ProjectService {
 }
   }
 
-  async getAllProjects(): Promise<Response> {
-    try {
-      const projects = await this.dataService.getAllProjects();
-      return Response.success(projects);
-    } catch (error) {
-      return Response.error('Failed to fetch projects', 500);
-    }
-  }
 
-  async getProjectsByUserId(userId: string): Promise<Response> {
+  async getProjectsByUserId(userId: string): Promise<Project[] | Error> {
     try {
       const user = await this.entityManager.findOne(User, { where: { id: userId } });
       
       if (!user) {
-        return Response.notFound('User not found');
+        throw new Error('User not found');
       }
-
+  
+  
       const userProjectRoles = await this.entityManager.find(UserProjectRole, {
         where: { user: { id: userId } },
-        relations: ['project', 'role']
+        relations: ['project', 'role'],
+        order: { project: { createdAt: 'ASC' } } 
       });
-
+  
       const projects = userProjectRoles.map(upr => ({
         ...upr.project,
         role: upr.role.name
       }));
-
-      return Response.success(projects);
+  
+      return projects;
     } catch (error) {
-      return Response.error(`Failed to fetch projects for user: ${error.message}`, 500);
+      console.error('Error in getProjectsByUserId:', error);
+      return error instanceof Error ? error : new Error('An error occurred while fetching projects');
     }
   }
-
+  
   
 }

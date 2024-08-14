@@ -46,7 +46,7 @@ export class AuthService {
   }
 
   private generateToken(user: UserData): string {
-    const payload = {  userId: user.id , username: user.username , sub :{}};
-    return this.jwtService.sign(payload);
+    const payload = { userId: user.id, username: user.username, sub: {} };
+    return this.jwtService.sign(payload, { expiresIn: '7d' });
   }
 }

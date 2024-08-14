@@ -6,6 +6,7 @@ import { DatabaseModule } from '@data/data.module';
 import { AuthModule } from '@auth/auth/auth.module';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { rabbitmqConfig } from '@shared';
+
 @Module({
   imports: [
     AuthModule,

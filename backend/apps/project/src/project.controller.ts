@@ -50,7 +50,7 @@ export class ProjectController {
     }
   }
 
-  @Get('user')
+  @Get('mine')
   @UseGuards(JwtAuthGuard)
 
   @ApiOperation({ summary: 'Get projects by user ID' })

@@ -7,6 +7,8 @@ import {
   NavbarItem,
   NavbarMenuItem,
 } from "@nextui-org/navbar";
+import { cookies } from 'next/headers';
+
 import { Button } from "@nextui-org/button";
 import { Kbd } from "@nextui-org/kbd";
 import { Link } from "@nextui-org/link";
@@ -27,6 +29,10 @@ import {
 } from "@/components/icons";
 
 export const Navbar = () => {
+  const cookieStore = cookies();
+  const authToken = cookieStore.get('authToken');
+  const isLoggedIn = !!authToken;
+
   const searchInput = (
     <Input
       aria-label="Search"
@@ -57,7 +63,6 @@ export const Navbar = () => {
             <p className="font-bold text-inherit">TODO</p>
           </NextLink>
         </NavbarBrand>
-  
       </NavbarContent>
 
       <NavbarContent
@@ -65,29 +70,36 @@ export const Navbar = () => {
         justify="end"
       >
         <NavbarItem className="hidden sm:flex gap-2">
-          <Link isExternal aria-label="Twitter" href={siteConfig.links.twitter}>
-            <TwitterIcon className="text-default-500" />
-          </Link>
-          <Link isExternal aria-label="Discord" href={siteConfig.links.discord}>
-            <DiscordIcon className="text-default-500" />
-          </Link>
+     
           <Link isExternal aria-label="Github" href={siteConfig.links.github}>
             <GithubIcon className="text-default-500" />
           </Link>
           <ThemeSwitch />
         </NavbarItem>
-        <NavbarItem className="hidden lg:flex">{searchInput}</NavbarItem>
+        
+       
         <NavbarItem className="hidden md:flex">
-          <Button
-            isExternal
-            as={Link}
-            className="text-sm font-normal text-default-600 bg-default-100"
-            href={siteConfig.links.sponsor}
-            startContent={<HeartFilledIcon className="text-danger" />}
-            variant="flat"
-          >
-            Sponsor
-          </Button>
+          {isLoggedIn ? (
+            
+            <form action="/api/logout" method="POST">
+              <Button
+                type="submit"
+                className="text-sm font-normal text-default-600 bg-default-100"
+                variant="flat"
+              >
+                Logout
+              </Button>
+            </form>
+          ) : (
+            <Link href="/login">
+              <Button
+                className="text-sm font-normal text-default-600 bg-default-100"
+                variant="flat"
+              >
+                Login
+              </Button>
+            </Link>
+          )}
         </NavbarItem>
       </NavbarContent>
 
@@ -109,8 +121,8 @@ export const Navbar = () => {
                   index === 2
                     ? "primary"
                     : index === siteConfig.navMenuItems.length - 1
-                      ? "danger"
-                      : "foreground"
+                    ? "danger"
+                    : "foreground"
                 }
                 href="#"
                 size="lg"
@@ -119,6 +131,19 @@ export const Navbar = () => {
               </Link>
             </NavbarMenuItem>
           ))}
+          <NavbarMenuItem>
+            {isLoggedIn ? (
+              <form action="/api/logout" method="POST">
+                <Button type="submit" color="danger" size="lg">
+                  Logout
+                </Button>
+              </form>
+            ) : (
+              <Link color="primary" href="/login" size="lg">
+                Login
+              </Link>
+            )}
+          </NavbarMenuItem>
         </div>
       </NavbarMenu>
     </NextUINavbar>

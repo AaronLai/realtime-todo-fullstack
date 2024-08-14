@@ -5,19 +5,16 @@ import { IsString, IsOptional, IsUUID, IsEnum, IsDateString, IsArray } from 'cla
 // backend/apps/task/src/enums/task-enums.ts
 
 export enum TaskStatus {
-    TODO = 'TODO',
-    IN_PROGRESS = 'IN_PROGRESS',
-    REVIEW = 'REVIEW',
-    DONE = 'DONE',
-    CANCELLED = 'CANCELLED'
-  }
-  
-  export enum TaskPriority {
-    LOW = 'LOW',
-    MEDIUM = 'MEDIUM',
-    HIGH = 'HIGH',
-    URGENT = 'URGENT'
-  }
+  TODO = 'Todo',
+  IN_PROGRESS = 'In_Progress',
+  DONE = 'Done'
+}
+
+export enum TaskPriority {
+  LOW = 'Low',
+  MEDIUM = 'Medium',
+  HIGH = 'High'
+}
   
 export class CreateTaskDto {
   @IsString()
@@ -26,8 +23,9 @@ export class CreateTaskDto {
   @IsString()
   description: string;
 
-  @IsEnum(TaskStatus)
-  status: TaskStatus;
+  @IsEnum(TaskStatus, { each: true })
+  status: TaskStatus[];
+
 
   @IsDateString()
   dueDate: Date;
@@ -61,7 +59,7 @@ export class UpdateTaskDto {
 
   @IsEnum(TaskStatus)
   @IsOptional()
-  status?: TaskStatus;
+  status?: TaskStatus[];
 
   @IsDateString()
   @IsOptional()
@@ -90,8 +88,9 @@ export class TaskResponseDto {
     @IsString()
     description: string;
   
-    @IsEnum(TaskStatus)
-    status: TaskStatus;
+    @IsEnum(TaskStatus, { each: true })
+    status: TaskStatus[];
+  
   
     @IsDateString()
     dueDate: Date;
