@@ -50,7 +50,21 @@ export class ProjectController {
     }
   }
 
+  @Get('user')
+  @UseGuards(JwtAuthGuard)
 
+  @ApiOperation({ summary: 'Get projects by user ID' })
+  @ApiResponse({ status: 200, description: 'Projects retrieved successfully.', type: [ProjectResponseDto] })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @UseGuards(JwtAuthGuard)
+  async getProjectsByUserId(@UserPayload() user: any): Promise<Response> {
+    try {
+      const projects = await this.projectService.getProjectsByUserId(user.userId);
+      return Response.success(projects, 200);
+    } catch (error) {
+      return Response.error('An error occurred while retrieving the projects', 500);
+    }
+  }
 
 
   @Get(':id')
@@ -81,3 +95,5 @@ export class ProjectController {
     return this.projectService.updateProject(id, updateProjectDto);
   }
 }
+
+
