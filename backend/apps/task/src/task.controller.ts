@@ -22,7 +22,7 @@ export class TaskController {
   async createTask(@UserPayload() user: any, @Body() taskData: CreateTaskDto): Promise<Response> {
     const taskWithCreator = {
       ...taskData,
-      status:[TaskStatus.TODO],
+      status:TaskStatus.TODO,
       createdById: user.userId,
    
     };

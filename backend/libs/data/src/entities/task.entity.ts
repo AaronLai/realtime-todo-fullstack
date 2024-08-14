@@ -13,8 +13,8 @@ export class Task {
   @Column()
   description: string;
 
-  @Column('text', { array: true })
-  status: string[];
+  @Column('text')
+  status: string;
 
   @Column({ type: 'date' })
   dueDate: Date;

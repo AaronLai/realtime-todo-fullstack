@@ -115,7 +115,32 @@ export const api = {
       { baseURL: TASK_API_BASE_URL }
     );
   },
-
+  updateTask: async (taskId: string, updateData: Partial<Task>): Promise<ApiResponse<Task>> => {
+    return apiCall<Task>(
+      `/${taskId}`,
+      'PUT',
+      updateData,
+      true,
+      { baseURL: TASK_API_BASE_URL }
+    );
+  },
+  deleteTask: async (taskId: string): Promise<ApiResponse<void>> => {
+    return apiCall<void>(
+      `/${taskId}`,
+      'DELETE',
+      undefined,
+      true,
+      { baseURL: TASK_API_BASE_URL }
+    );
+  },createProject: async (projectData: { name: string; description: string }): Promise<ApiResponse<any>> => {
+    return apiCall<any>(
+      '/',
+      'POST',
+      projectData,
+      true,
+      { baseURL: PROJECT_API_BASE_URL }
+    );
+  },
 
   // Add other API calls here as needed
 };

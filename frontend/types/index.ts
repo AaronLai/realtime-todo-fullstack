@@ -14,7 +14,7 @@ export interface Task {
   id?: string;
   name: string;
   description: string;
-  status?: 'Todo' | 'In_Progress' | 'Done';
+  status?: 'Todo' | 'In Progress' | 'Done';
   dueDate: string;
   tags: string[];
   priority: 'Low' | 'Medium' | 'High';

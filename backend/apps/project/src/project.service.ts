@@ -19,7 +19,7 @@ export class ProjectService {
 
   async createProjectAndAssignRole(
     createProjectDto: CreateProjectDto
-  ): Promise<Response> {
+  ): Promise<Project | null> {
     return await this.entityManager.transaction(async transactionalEntityManager => {
       try {
 
@@ -38,10 +38,10 @@ export class ProjectService {
         project.description = createProjectDto.description;
         project.createdBy = user;
         // Add other properties as needed
-        const savedProject = await transactionalEntityManager.save(Project, project);
+        let savedProject = await transactionalEntityManager.save(Project, project);
 
 
-      
+        
 
         // Get default role name from environment
         const defaultRoleName = this.configService.get<string>('DEFAULT_PROJECT_ROLE');
@@ -63,11 +63,12 @@ export class ProjectService {
         userProjectRole.role = role;
 
         await transactionalEntityManager.save(UserProjectRole, userProjectRole);
-
-        return Response.success({ project: savedProject, userProjectRole }, 201);
+      savedProject.createdById = user.id;
+      delete savedProject.createdBy;
+        return savedProject;
     } catch (error) {
         // If any error occurs, the transaction will be rolled back automatically
-        return Response.error(`Failed to create project and assign role: ${error.message}`, 500);
+        return null;
     }
     });
   }

@@ -24,7 +24,7 @@ export class CreateTaskDto {
   description: string;
 
   @IsEnum(TaskStatus, { each: true })
-  status: TaskStatus[];
+  status: TaskStatus;
 
 
   @IsDateString()
@@ -59,7 +59,7 @@ export class UpdateTaskDto {
 
   @IsEnum(TaskStatus)
   @IsOptional()
-  status?: TaskStatus[];
+  status?: TaskStatus;
 
   @IsDateString()
   @IsOptional()
