@@ -5,6 +5,9 @@ import { DataService } from './data.service';
 import { UserEntityService } from './services/user.entity.service';
 import { ProjectEntityService } from './services/project.entity.service';
 import { TaskEntityService } from './services/task.entity.service';
+import { RoleEntityService } from './services/role.entity.service';
+import { PermissionEntityService } from './services/permission.entity.service';
+import { UserProjectRoleEntityService } from './services/user-project-role.entity.service';
 import { User } from './entities/user.entity';
 import { Task } from './entities/task.entity';
 import { Project } from './entities/project.entity';
@@ -13,6 +16,7 @@ import { Role } from './entities/role.entity';
 import { RolePermission } from './entities/role-permission.entity';
 import { Permission } from './entities/permission.entity';
 import { Repository } from 'typeorm';
+import { RoleSeeder } from './seeders/role.seeder';
 
 @Module({
   imports: [
@@ -32,7 +36,16 @@ import { Repository } from 'typeorm';
     }),
     TypeOrmModule.forFeature([User, Task, Project, UserProjectRole, Role, RolePermission, Permission]),
   ],
-  providers: [Repository, DataService, UserEntityService,ProjectEntityService,TaskEntityService],
-  exports: [TypeOrmModule, DataService,],
+  providers: [
+    Repository,
+    DataService,
+    UserEntityService,
+    ProjectEntityService,
+    TaskEntityService,
+    RoleEntityService,
+    RoleSeeder,
+    UserProjectRoleEntityService
+  ],
+  exports: [TypeOrmModule, DataService],
 })
 export class DatabaseModule { }

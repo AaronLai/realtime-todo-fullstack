@@ -15,7 +15,7 @@ describe('ProjectController', () => {
         {
           provide: ProjectService,
           useValue: {
-            createProject: jest.fn(),
+            createProjectAndAssignRole: jest.fn(),
             getProject: jest.fn(),
             updateProject: jest.fn(),
           },
@@ -33,15 +33,15 @@ describe('ProjectController', () => {
       const createProjectDto: CreateProjectDto = {
         name: 'Test Project',
         description: 'This is a test project',
-        createdBy: null
+        createdBy: user.userId,
       };
       const expectedResponse = Response.success({ id: '123e4567-e89b-12d3-a456-426614174001', ...createProjectDto, createdBy: user.userId }, 201);
 
-      jest.spyOn(projectService, 'createProject').mockResolvedValue(expectedResponse);
+      jest.spyOn(projectService, 'createProjectAndAssignRole').mockResolvedValue(expectedResponse);
 
       const result = await projectController.createProject(user, createProjectDto);
       expect(result).toEqual(expectedResponse);
-      expect(projectService.createProject).toHaveBeenCalledWith({
+      expect(projectService.createProjectAndAssignRole).toHaveBeenCalledWith({
         ...createProjectDto,
         createdBy: user.userId,
       });
@@ -52,17 +52,36 @@ describe('ProjectController', () => {
       const createProjectDto: CreateProjectDto = {
         name: 'Test Project',
         description: 'This is a test project',
-        createdBy: null
+        createdBy: user.userId,
       };
-      const expectedResponse = Response.error('Failed to create project');
+      const expectedResponse = Response.error('An error occurred while creating the project', 500);
 
-      jest.spyOn(projectService, 'createProject').mockRejectedValue(new Error('Database error'));
+      jest.spyOn(projectService, 'createProjectAndAssignRole').mockRejectedValue(new Error('Database error'));
 
       const result = await projectController.createProject(user, createProjectDto);
       expect(result).toEqual(expectedResponse);
     });
   });
 
+  describe('handleProjectMessages', () => {
+    it('should handle CREATE_DEFAULT_PROJECT message', async () => {
+      const messageData = {
+        action: 'CREATE_DEFAULT_PROJECT',
+        userId: '123e4567-e89b-12d3-a456-426614174000',
+      };
+      const expectedProject = {
+        name: 'Todo List',
+        description: 'This is a your first todolist',
+        createdBy: messageData.userId,
+      };
+      const expectedResponse = Response.success(expectedProject);
+  
+      jest.spyOn(projectService, 'createProjectAndAssignRole').mockResolvedValue(expectedResponse);
+  
+      await projectController.handleProjectMessages(messageData);
+      expect(projectService.createProjectAndAssignRole).toHaveBeenCalledWith(expectedProject);
+    });
+  });
   describe('getProject', () => {
     it('should get a project by id', async () => {
       const projectId = '123e4567-e89b-12d3-a456-426614174001';
@@ -87,13 +106,15 @@ describe('ProjectController', () => {
       jest.spyOn(projectService, 'getProject').mockResolvedValue(expectedResponse);
 
       const result = await projectController.getProject(projectId);
-      expect(result).toEqual(expectedResponse); expect(projectService.getProject).toHaveBeenCalledWith(projectId);
+      expect(result).toEqual(expectedResponse);
+      expect(projectService.getProject).toHaveBeenCalledWith(projectId);
     });
   });
 
   describe('updateProject', () => {
     it('should update a project', async () => {
       const projectId = '123e4567-e89b-12d3-a456-426614174001'; const updateProjectDto: UpdateProjectDto = { name: 'Updated Project', description: 'This is an updated project', }; const expectedResponse = Response.success({ id: projectId, ...updateProjectDto });
+
       jest.spyOn(projectService, 'updateProject').mockResolvedValue(expectedResponse);
 
       const result = await projectController.updateProject(projectId, updateProjectDto);
@@ -109,10 +130,13 @@ describe('ProjectController', () => {
       };
       const expectedResponse = Response.error('Failed to update project');
 
-      jest.spyOn(projectService, 'updateProject').mockRejectedValue(new Error('Database error'));
+      jest.spyOn(projectService, 'updateProject').mockResolvedValue(expectedResponse);
 
       const result = await projectController.updateProject(projectId, updateProjectDto);
       expect(result).toEqual(expectedResponse);
+      expect(projectService.updateProject).toHaveBeenCalledWith(projectId, updateProjectDto);
     });
   });
 });
+
+

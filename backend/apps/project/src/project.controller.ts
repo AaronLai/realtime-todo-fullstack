@@ -21,13 +21,21 @@ export class ProjectController {
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @UseGuards(JwtAuthGuard)
-
   async createProject(@UserPayload() user: any, @Body() createProjectDto: CreateProjectDto): Promise<Response> {
-    const projectWithCreator = {
-      ...createProjectDto,
-      createdBy: user.userId
-    };
-    return this.projectService.createProject(projectWithCreator);
+    try {
+      const projectWithCreator = {
+        ...createProjectDto,
+        createdBy: user.userId
+      };
+      const project = await this.projectService.createProjectAndAssignRole(projectWithCreator);
+      if (project) {
+        return Response.success(project, 201);
+      } else {
+        return Response.error('Failed to create project', 400);
+      }
+    } catch (error) {
+      return Response.error('An error occurred while creating the project', 500);
+    }
   }
   @EventPattern(rabbitmqConfig.routingKeys.projectRouting)
   async handleProjectMessages(data: any) {
@@ -38,7 +46,7 @@ export class ProjectController {
         description: 'This is a your first  todolist ',
         createdBy: data.userId
       };
-      await this.projectService.createProject(projectWithCreator);
+      const project = await this.projectService.createProjectAndAssignRole(projectWithCreator);
     }
   }
 

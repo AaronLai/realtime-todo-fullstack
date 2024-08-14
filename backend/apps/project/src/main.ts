@@ -6,6 +6,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { Logger } from '@nestjs/common';
 import { LoggingMiddleware } from "@utils/logging.middleware";
 import { rabbitmqConfig } from '@shared';
+import { DataService } from '@data/data.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(ProjectModule);
@@ -25,16 +26,7 @@ async function bootstrap() {
     },
   });
 
-  // app.connectMicroservice<MicroserviceOptions>({
-  //   transport: Transport.RMQ,
-  //   options: {
-  //     urls: [configService.get<string>('RABBITMQ_URL')],
-  //     queue: rabbitmqConfig.queues.userQueue,
-  //     queueOptions: {
-  //       durable: false,
-  //     },
-  //   },
-  // });
+
 
   app.enableCors();
 
@@ -52,7 +44,12 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
+ 
+  // Seed roles
+  const dataService = app.get(DataService);
+  await dataService.seedRoles();
 
+  
   await app.startAllMicroservices();
   await app.listen(port || 4002);
 

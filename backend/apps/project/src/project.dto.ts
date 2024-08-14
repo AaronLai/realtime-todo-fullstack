@@ -15,10 +15,10 @@ export class CreateProjectDto {
   @IsOptional()
   description?: string;
 
-  @ApiProperty()
+  @ApiProperty() 
   @IsNumber()
   @IsOptional()
-  createdBy: number; // Assuming we'll use the user's ID
+  createdBy: string; // Assuming we'll use the user's ID
 
   // Add other properties as needed
 }

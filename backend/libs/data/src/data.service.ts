@@ -2,10 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { ProjectEntityService } from './services/project.entity.service';
 import { UserEntityService } from './services/user.entity.service';
 import { TaskEntityService } from './services/task.entity.service';
+import { UserProjectRoleEntityService } from './services/user-project-role.entity.service';
 
 import { Project } from './entities/project.entity';
 import { Task } from './entities/task.entity';
 import { User } from './entities/user.entity';
+import { RoleSeeder } from './seeders/role.seeder';
 
 @Injectable()
 export class DataService {
@@ -13,6 +15,9 @@ export class DataService {
     private projectEntityService: ProjectEntityService,
     private taskEntityService: TaskEntityService,
     private userEntityService: UserEntityService,
+    private readonly roleSeeder: RoleSeeder,
+    public userProjectRoleEntityService: UserProjectRoleEntityService,
+
   ) {}
 // User-related methods
 async findUser(username: string): Promise<User> {
@@ -71,5 +76,10 @@ async createUser(userData: Partial<User>): Promise<User> {
 
   async findTasksByCreatedUser(userId: string): Promise<Task[]> {
     return this.taskEntityService.findTasksByCreatedUser(userId);
+  }
+
+  //Seeder 
+  public  async seedRoles() {
+    await this.roleSeeder.seed();
   }
 }

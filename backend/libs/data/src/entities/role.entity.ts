@@ -5,7 +5,7 @@ import { RolePermission } from './role-permission.entity';
 @Entity('roles')
 export class Role {
   @PrimaryGeneratedColumn()
-  id: number;
+  id: string;
 
   @Column()
   name: string;
