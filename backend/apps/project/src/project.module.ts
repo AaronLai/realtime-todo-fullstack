@@ -6,6 +6,7 @@ import { DatabaseModule } from '@data/data.module';
 import { AuthModule } from '@auth/auth/auth.module';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { rabbitmqConfig } from '@shared';
+import { ProjectGateway } from './project.gateway';
 
 @Module({
   imports: [
@@ -30,9 +31,23 @@ import { rabbitmqConfig } from '@shared';
         }),
         inject: [ConfigService],
       },
+      {
+        name: 'TASK_SERVICE', // Change this to TASK_SERVICE
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [configService.get<string>('RABBITMQ_URL')],
+            queue: rabbitmqConfig.queues.taskQueue, // Change this to projectQueue
+            queueOptions: {
+              durable: false,
+            },
+          },
+        }),
+        inject: [ConfigService],
+      },
     ]),
   ],
   controllers: [ProjectController],
-  providers: [ProjectService],
+  providers: [ProjectService,ProjectGateway],
 })
 export class ProjectModule {}

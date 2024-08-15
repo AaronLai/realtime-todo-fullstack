@@ -7,12 +7,16 @@ import { CreateProjectDto, UpdateProjectDto, ProjectResponseDto } from './projec
 import { UserPayload } from '@auth/auth/auth.decorator';
 import { EventPattern } from '@nestjs/microservices';
 import { rabbitmqConfig } from '@shared';
+import { ProjectGateway } from './project.gateway';
 
 @ApiTags('projects')
 @ApiBearerAuth()
 @Controller('projects')
 export class ProjectController {
-  constructor(private readonly projectService: ProjectService) {}
+  constructor(private readonly projectService: ProjectService,
+    private readonly projectGateway: ProjectGateway
+
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new project' })
@@ -74,6 +78,17 @@ export class ProjectController {
       const project = await this.projectService.createProjectAndAssignRole(projectWithCreator);
     }
   }
+  @EventPattern('task_updated')
+  async handleTaskMessages(data: any) {
+    console.log('Received task message:', data);
+    if (data.action === 'TASK_UPDATED') {
+      const { taskId, update, projectId } = data;
+
+      this.projectGateway.sendTaskUpdate(projectId, taskId, update);
+
+    }
+  }
+
 
   @Get('mine')
   @UseGuards(JwtAuthGuard)

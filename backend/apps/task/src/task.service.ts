@@ -1,11 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { DataService } from '@data/data.service';
 import { Response } from '@utils/response';
 import { Task } from '@data/entities/task.entity';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class TaskService {
-  constructor(private dataService: DataService) {}
+  constructor(private dataService: DataService,  
+     @Inject('PROJECT_SERVICE') private readonly client: ClientProxy
+) {}
 
   async createTask(taskData: Partial<Task>): Promise<Response> {
     console.log('TaskService -> createTask -> taskData', taskData);
@@ -37,6 +40,16 @@ export class TaskService {
       if (!updatedTask) {
         return Response.notFound('Task not found');
       }
+           // Emit an event to RabbitMQ
+           this.client.emit('task_updated', { 
+            action :'TASK_UPDATED' ,
+
+            taskId: id, 
+            update: updatedTask,
+            projectId: updatedTask.projectId // Assuming task has a projectId field
+          });
+
+
       return Response.success(updatedTask);
     } catch (error) {
       return Response.error('Failed to update task', 500);

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { Response } from '@utils/response';
@@ -8,13 +8,16 @@ import { Role } from '@data/entities/role.entity';
 import { UserProjectRole } from '@data/entities/user-project-role.entity';
 import { DataService } from '@data/data.service';
 import { CreateProjectDto } from './project.dto';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class ProjectService {
   constructor(
     private entityManager: EntityManager,
     private configService: ConfigService,
-    private dataService: DataService
+    private dataService: DataService,
+    @Inject('PROJECT_SERVICE') private readonly client: ClientProxy,
+
   ) {}
 
   async createProjectAndAssignRole(
@@ -136,13 +139,16 @@ export class ProjectService {
       const updatedProject = await this.dataService.updateProject(id, projectData);
       if (!updatedProject) {
         return Response.notFound('Project not found');
-    }
+      }
+      
+      // Emit event to RabbitMQ
+      this.client.emit('project_updated', { projectId: id, update: updatedProject });
+
       return Response.success(updatedProject);
     } catch (error) {
       return Response.error('Failed to update project', 500);
     }
   }
-
   async deleteProject(id: string): Promise<Response> {
     try {
       await this.dataService.deleteProject(id);

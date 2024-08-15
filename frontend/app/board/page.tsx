@@ -6,6 +6,10 @@ import { api } from "@/service/restful";
 import { Task, User } from '../../types';
 import AddTaskForm from '../../components/add-task-form';
 import TaskCard from '../../components/task-card';
+import { io } from 'socket.io-client';
+import toast, { Toaster } from 'react-hot-toast';
+
+const SOCKET_URL = 'http://localhost:4002';
 
 interface Project {
   id: string;
@@ -27,9 +31,54 @@ const BoardPage: React.FC = () => {
   useEffect(() => {
     fetchProjects();
   }, []);
+  const [socket, setSocket] = useState<any>(null);
+  useEffect(() => {
+    console.log('Tasks state updated:', tasks);
+  }, [tasks]);
+  useEffect(() => {
+    const newSocket = io(SOCKET_URL);
+    setSocket(newSocket);
 
+    newSocket.on('connect', () => {
+      console.log('Connected to Socket.IO server');
+    });
 
+    newSocket.on('disconnect', () => {
+      console.log('Disconnected from Socket.IO server');
+    });
 
+    newSocket.on('taskUpdate', handleUpdate);
+
+    return () => {
+      newSocket.off('projectUpdate');
+      newSocket.disconnect();
+    };
+  }, []);
+  const handleUpdate = (update: any) => {
+    console.log('Received update:', update);
+    console.log('Received update type:', update.type);
+
+    if (update.type === 'taskUpdate') {
+      console.log('Handling taskUpdate');
+
+      setTasks(prevTasks => prevTasks.map(task =>
+        task.id === update.data.taskId ? { ...task, ...update.data.update } : task
+      ));
+      toast.success(`Task "${update.data.update.name}" updated!`);
+
+    } else {
+      console.log('Unhandled update type:', update.type);
+    }
+  };
+  useEffect(() => {
+    if (socket && selectedProject) {
+      socket.emit('joinProject', selectedProject);
+
+      return () => {
+        socket.emit('leaveProject', selectedProject);
+      };
+    }
+  }, [socket, selectedProject]);
   useEffect(() => {
     if (selectedProject) {
       fetchTasks(selectedProject);
@@ -37,6 +86,9 @@ const BoardPage: React.FC = () => {
 
     }
   }, [selectedProject]);
+
+
+
 
   const fetchProjectUsers = async (projectId: string) => {
     try {
@@ -49,7 +101,7 @@ const BoardPage: React.FC = () => {
     }
   };
 
-  
+
   const fetchProjects = async () => {
     try {
       const response = await api.getProjects();
@@ -135,7 +187,7 @@ const BoardPage: React.FC = () => {
           name={user.username}
         />
       ))}
-       <Button
+      <Button
         isIconOnly
         color="primary"
         className="text-default-500"
@@ -154,17 +206,17 @@ const BoardPage: React.FC = () => {
       console.error("Username, role, and selected project are required");
       return;
     }
-  
+
     try {
       // First, create the user (you might need to adjust this part based on your actual user creation API)
       const newUser: User = {
         id: (users.length + 1).toString(),
         username: newUsername.trim()
       };
-  
+
       // Then, assign the role to the user
       const response = await api.assignRoleToUser(selectedProject, newUserRole, newUsername.trim());
-  
+
       if (response.status === 200) {
         setUsers([...users, newUser]);
         setNewUsername("");
@@ -204,6 +256,8 @@ const BoardPage: React.FC = () => {
 
   return (
     <div className="w-full p-4">
+          <Toaster position="top-right" />
+
       <h2 className="text-2xl font-bold mb-4">Welcome to ToDo List!</h2>
       <div className="flex justify-between items-center mb-4">
         <Tabs
@@ -240,7 +294,7 @@ const BoardPage: React.FC = () => {
             <div className="flex flex-wrap gap-4">
               {tasks.map((task: Task) => (
                 <TaskCard
-                  key={task.id}
+                  key={task.id+task.description}
                   task={task}
                   onTaskUpdate={handleTaskUpdate}
                   onTaskDelete={handleTaskDelete}

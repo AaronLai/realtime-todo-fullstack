@@ -7,6 +7,7 @@ import { Logger } from '@nestjs/common';
 import { LoggingMiddleware } from "@utils/logging.middleware";
 import { rabbitmqConfig } from '@shared';
 import { DataService } from '@data/data.service';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 
 async function bootstrap() {
   const app = await NestFactory.create(ProjectModule);
@@ -26,6 +27,9 @@ async function bootstrap() {
     },
   });
 
+  
+
+  app.useWebSocketAdapter(new IoAdapter(app));
 
 
   app.enableCors();
