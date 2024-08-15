@@ -1,9 +1,8 @@
-// backend/apps/project/src/dto/project.dto.ts
-
 import { IsString, IsNotEmpty, IsOptional, IsNumber } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { User } from '../../../libs/data/src/entities/user.entity';
 
+// DTO for creating a new project
 export class CreateProjectDto {
   @ApiProperty()
   @IsString()
@@ -18,11 +17,10 @@ export class CreateProjectDto {
   @ApiProperty() 
   @IsNumber()
   @IsOptional()
-  createdBy: string; // Assuming we'll use the user's ID
-
-  // Add other properties as needed
+  createdBy: string; // User ID of the project creator
 }
 
+// DTO for updating an existing project
 export class UpdateProjectDto {
   @ApiPropertyOptional()
   @IsString()
@@ -33,10 +31,9 @@ export class UpdateProjectDto {
   @IsString()
   @IsOptional()
   description?: string;
-
-  // Add other properties as needed
 }
 
+// DTO for project response
 export class ProjectResponseDto {
   @ApiProperty()
   @IsNumber()

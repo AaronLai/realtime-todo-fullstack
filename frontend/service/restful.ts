@@ -2,14 +2,17 @@ import axios, { AxiosResponse } from 'axios';
 import { setCookie, getCookie } from 'cookies-next';
 import { ApiResponse, Task, Project } from '../types';
 
+// Base URLs for different API endpoints
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4001';
 const PROJECT_API_BASE_URL = process.env.NEXT_PUBLIC_PROJECT_API_BASE_URL || 'http://localhost:4002';
 const TASK_API_BASE_URL = process.env.NEXT_PUBLIC_TASK_API_BASE_URL || 'http://localhost:4003';
 
+// Specific endpoints for different services
 const userEndpoint = `${API_BASE_URL}/users`;
 const projectEndpoint = `${PROJECT_API_BASE_URL}/projects`;
 const taskEndpoint = `${TASK_API_BASE_URL}/tasks`;
 
+// Type definitions for API responses
 type SigninResponse = {
   user: any;
   token: string;
@@ -19,6 +22,15 @@ type SignupResponse = {
   data: any;
 };
 
+/**
+ * Generic function to make API calls
+ * @param endpoint - The API endpoint
+ * @param method - HTTP method (GET, POST, PUT, DELETE)
+ * @param body - Request body (optional)
+ * @param useAuth - Whether to use authentication token (default: false)
+ * @param additionalConfig - Additional axios config (optional)
+ * @returns Promise with API response
+ */
 async function apiCall<T>(
   endpoint: string,
   method: string,
@@ -41,6 +53,7 @@ async function apiCall<T>(
       config.data = body;
     }
 
+    // Add authentication token if required
     if (useAuth) {
       const token = getCookie('authToken');
       if (!token) {
@@ -59,6 +72,10 @@ async function apiCall<T>(
   }
 }
 
+/**
+ * Set authentication token in cookies
+ * @param token - Authentication token
+ */
 const setAuthToken = (token: string) => {
   setCookie('authToken', token, {
     httpOnly: false,
@@ -68,7 +85,14 @@ const setAuthToken = (token: string) => {
   });
 };
 
+// API object containing all API functions
 export const api = {
+  /**
+   * User sign in
+   * @param username - User's username
+   * @param password - User's password
+   * @returns Promise with sign in response
+   */
   signin: async (username: string, password: string): Promise<ApiResponse<SigninResponse>> => {
     const response = await apiCall<SigninResponse>(
       '/signin',
@@ -86,6 +110,12 @@ export const api = {
     return response;
   },
 
+  /**
+   * User sign up
+   * @param username - New user's username
+   * @param password - New user's password
+   * @returns Promise with sign up response
+   */
   signup: async (username: string, password: string): Promise<ApiResponse<SignupResponse>> => {
     console.log('signup', username, password);
     const response = await apiCall<SignupResponse>(
@@ -100,6 +130,10 @@ export const api = {
     return response;
   },
 
+  /**
+   * Get user's projects
+   * @returns Promise with array of user's projects
+   */
   getProjects: async (): Promise<ApiResponse<Project[]>> => {
     return apiCall<Project[]>(
       '/mine',
@@ -110,6 +144,11 @@ export const api = {
     );
   },
 
+  /**
+   * Create a new task
+   * @param taskData - Object containing task details
+   * @returns Promise with created task data
+   */
   createTask: async (taskData: {
     name: string;
     description: string;
@@ -128,6 +167,11 @@ export const api = {
     );
   },
 
+  /**
+   * Get tasks for a specific project
+   * @param projectId - ID of the project
+   * @returns Promise with array of tasks
+   */
   getTasksByProjectId: async (projectId: string): Promise<ApiResponse<Task[]>> => {
     return apiCall<Task[]>(
       `/project/${projectId}`,
@@ -138,6 +182,12 @@ export const api = {
     );
   },
 
+  /**
+   * Update an existing task
+   * @param taskId - ID of the task to update
+   * @param updateData - Object containing fields to update
+   * @returns Promise with updated task data
+   */
   updateTask: async (taskId: string, updateData: Partial<Task>): Promise<ApiResponse<Task>> => {
     return apiCall<Task>(
       `/${taskId}`,
@@ -148,6 +198,11 @@ export const api = {
     );
   },
 
+  /**
+   * Delete a task
+   * @param taskId - ID of the task to delete
+   * @returns Promise with void response
+   */
   deleteTask: async (taskId: string): Promise<ApiResponse<void>> => {
     return apiCall<void>(
       `/${taskId}`,
@@ -158,6 +213,11 @@ export const api = {
     );
   },
 
+  /**
+   * Create a new project
+   * @param projectData - Object containing project name and description
+   * @returns Promise with created project data
+   */
   createProject: async (projectData: { name: string; description: string }): Promise<ApiResponse<any>> => {
     return apiCall<any>(
       '/',
@@ -168,6 +228,13 @@ export const api = {
     );
   },
 
+  /**
+   * Assign a role to a user in a project
+   * @param projectId - ID of the project
+   * @param role - Role to assign
+   * @param username - Username of the user to assign the role
+   * @returns Promise with assignment response
+   */
   assignRoleToUser: async (projectId: string, role: string, username: string): Promise<ApiResponse<any>> => {
     return apiCall<any>(
       `/${projectId}/assign/${role}`,
@@ -178,6 +245,11 @@ export const api = {
     );
   },
 
+  /**
+   * Get users associated with a project
+   * @param projectId - ID of the project
+   * @returns Promise with array of project users
+   */
   getProjectUsers: async (projectId: string): Promise<ApiResponse<any[]>> => {
     return apiCall<any[]>(
       `/${projectId}/users`,

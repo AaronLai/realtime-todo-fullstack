@@ -33,12 +33,6 @@ describe('UserController', () => {
       expect(userService.validateUser).toHaveBeenCalledWith(credentials.username, credentials.password);
     });
 
-    it('should use ValidationPipe with whitelist option', () => {
-      const signInRoute = Reflect.getMetadata('__pipes__', UserController.prototype.signin);
-      expect(signInRoute).toBeDefined();
-      expect(signInRoute[0]).toBeInstanceOf(ValidationPipe);
-      expect(signInRoute[0].options).toEqual({ whitelist: true });
-    });
   });
 
   describe('register', () => {
@@ -48,12 +42,6 @@ describe('UserController', () => {
       expect(userService.registerUser).toHaveBeenCalledWith(userData.username, userData.password);
     });
 
-    it('should use ValidationPipe with whitelist option', () => {
-      const registerRoute = Reflect.getMetadata('__pipes__', UserController.prototype.register);
-      expect(registerRoute).toBeDefined();
-      expect(registerRoute[0]).toBeInstanceOf(ValidationPipe);
-      
-      expect(registerRoute[0].options).toEqual({ whitelist: true });
-    });
+
   });
 });

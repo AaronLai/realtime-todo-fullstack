@@ -44,5 +44,5 @@ export const useProjects = () => {
     }
   };
 
-  return { projects, selectedProject, setSelectedProject, handleAddProject };
+  return { projects, selectedProject, setSelectedProject, handleAddProject , fetchProjects };
 };

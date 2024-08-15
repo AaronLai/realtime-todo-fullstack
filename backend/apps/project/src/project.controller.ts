@@ -18,6 +18,7 @@ export class ProjectController {
     private readonly projectGateway: ProjectGateway
   ) {}
 
+  // Create a new project
   @Post()
   @ApiOperation({ summary: 'Create a new project' })
   @ApiBody({ type: CreateProjectDto })
@@ -38,6 +39,7 @@ export class ProjectController {
     }
   }
 
+  // Assign a user to a project with a specific role
   @Post(':id/assign/:role')
   @ApiOperation({ summary: 'Assign a user to a project' })
   @ApiParam({ name: 'id', type: 'string', description: 'Project UUID' })
@@ -62,6 +64,7 @@ export class ProjectController {
     }
   }
 
+  // Get projects for the authenticated user
   @Get('mine')
   @ApiOperation({ summary: 'Get projects by user ID' })
   @ApiResponse({ status: 200, description: 'Projects retrieved successfully.', type: [ProjectResponseDto] })
@@ -76,6 +79,7 @@ export class ProjectController {
     }
   }
 
+  // Update a project
   @Put(':id')
   @ApiOperation({ summary: 'Update a project' })
   @ApiParam({ name: 'id', type: 'string', description: 'Project UUID' })
@@ -96,6 +100,7 @@ export class ProjectController {
     }
   }
 
+  // Get users for a specific project
   @Get(':id/users')
   @ApiOperation({ summary: 'Get users for a project' })
   @ApiParam({ name: 'id', type: 'string', description: 'Project UUID' })
@@ -112,6 +117,7 @@ export class ProjectController {
     }
   }
 
+  // Handle project-related messages from RabbitMQ
   @EventPattern(rabbitmqConfig.routingKeys.projectRouting)
   async handleProjectMessages(data: any) {
     console.log('Received project message:', data);
@@ -132,6 +138,7 @@ export class ProjectController {
     }
   }
 
+  // Handle task update events
   @EventPattern('task_updated')
   async handleTaskUpdateEvent(data: any) {
     console.log('Received task message:', data);
