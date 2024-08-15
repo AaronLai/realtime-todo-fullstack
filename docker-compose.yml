@@ -14,7 +14,7 @@ services:
       environment:
         - PORT=4000
       env_file:
-        - ./frontend/.env.development
+        - ./frontend/.env.prod
   user-service:
     build:
       context: ./backend
