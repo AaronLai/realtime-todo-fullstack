@@ -49,7 +49,7 @@ const BoardPage: React.FC = () => {
     <div className="w-full p-4">
       <Toaster position="top-right" />
       <h2 className="text-2xl font-bold mb-4">Welcome to ToDo List!</h2>
-      
+
       <div className="flex justify-between items-center mb-4">
         <Tabs
           variant="underlined"
@@ -115,8 +115,8 @@ const BoardPage: React.FC = () => {
               Cancel
             </Button>
             <Button color="primary" onClick={() => handleAddProject(newProjectName, () => setIsNewProjectModalOpen(false))}>
-  Create Project
-</Button>
+              Create Project
+            </Button>
 
           </ModalFooter>
         </ModalContent>
@@ -151,8 +151,8 @@ const BoardPage: React.FC = () => {
               Cancel
             </Button>
             <Button color="primary" onClick={() => handleAddUser(newUsername, newUserRole, () => setIsAddUserModalOpen(false))}>
-  Add User
-</Button>
+              Add User
+            </Button>
 
           </ModalFooter>
         </ModalContent>

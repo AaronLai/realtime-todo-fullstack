@@ -39,7 +39,7 @@ export default function AuthForm() {
         const response = await api.signup(username, password);
         console.log("Signup response:", response);
   
-        if (response.status === 201) {
+        if (response.status === 200) {
           console.log("Registration successful!");
           setMessage("Registration successful! Please login.");
           setIsLogin(true);
