@@ -1,4 +1,5 @@
-FROM node:20
+ARG NODE_VERSION=20
+FROM node:${NODE_VERSION}
 
 WORKDIR /app
 
@@ -13,6 +14,20 @@ COPY . .
 
 RUN yarn build
 
-EXPOSE 4020
+# Declare ARGs after FROM for multi-stage builds
+ARG PORT
+ARG START_CMD
 
-CMD ["yarn", "start:dev"]
+# Set environment variables from ARGs
+ENV PORT=${PORT}
+ENV START_CMD=${START_CMD}
+
+# Use an argument to dynamically set the port
+EXPOSE ${PORT}
+
+# Add some debugging output
+RUN echo "PORT is set to: ${PORT}"
+RUN echo "START_CMD is set to: ${START_CMD}"
+
+# Use environment variables to pass the command dynamically
+CMD echo "About to run: yarn ${START_CMD}" && yarn ${START_CMD}

@@ -13,10 +13,10 @@ import { ProjectGateway } from './project.gateway';
 @ApiBearerAuth()
 @Controller('projects')
 export class ProjectController {
-  constructor(private readonly projectService: ProjectService,
+  constructor(
+    private readonly projectService: ProjectService,
     private readonly projectGateway: ProjectGateway
-
-  ) { }
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new project' })
@@ -32,19 +32,16 @@ export class ProjectController {
         createdBy: user.userId
       };
       const project = await this.projectService.createProjectAndAssignRole(projectWithCreator);
-      if (project) {
-        return Response.success(project, 201);
-      } else {
-        return Response.error('Failed to create project', 400);
-      }
+      return Response.success(project, 201);
     } catch (error) {
-      return Response.error('An error occurred while creating the project', 500);
+      return Response.error(error.message, 400);
     }
   }
 
   @Post(':id/assign/:role')
   @ApiOperation({ summary: 'Assign a user to a project' })
   @ApiParam({ name: 'id', type: 'string', description: 'Project UUID' })
+  @ApiParam({ name: 'role', type: 'string', description: 'Role name' })
   @ApiBody({ schema: { type: 'object', properties: { username: { type: 'string' } } } })
   @ApiResponse({ status: 200, description: 'The user has been successfully assigned to the project.' })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
@@ -58,21 +55,14 @@ export class ProjectController {
     @Body('username') username: string
   ): Promise<Response> {
     try {
-      console.log(user);
-      const result = await this.projectService.assignUserToProjectWithRole(user.userId, username, projectId, role);
-      return result;
+      await this.projectService.assignUserToProjectWithRole(user.userId, username, projectId, role);
+      return Response.success('User successfully assigned to project');
     } catch (error) {
-      return Response.error('An error occurred while assigning the user to the project', 500);
+      return Response.error(error.message, 400);
     }
   }
 
-
-
-
-
   @Get('mine')
-  @UseGuards(JwtAuthGuard)
-
   @ApiOperation({ summary: 'Get projects by user ID' })
   @ApiResponse({ status: 200, description: 'Projects retrieved successfully.', type: [ProjectResponseDto] })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
@@ -80,12 +70,11 @@ export class ProjectController {
   async getProjectsByUserId(@UserPayload() user: any): Promise<Response> {
     try {
       const projects = await this.projectService.getProjectsByUserId(user.userId);
-      return Response.success(projects, 200);
+      return Response.success(projects);
     } catch (error) {
-      return Response.error('An error occurred while retrieving the projects', 500);
+      return Response.error(error.message, 400);
     }
   }
-
 
   @Put(':id')
   @ApiOperation({ summary: 'Update a project' })
@@ -95,12 +84,16 @@ export class ProjectController {
   @ApiResponse({ status: 404, description: 'Project not found.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @UseGuards(JwtAuthGuard)
-
   async updateProject(
     @Param('id') id: string,
     @Body() updateProjectDto: UpdateProjectDto
   ): Promise<Response> {
-    return this.projectService.updateProject(id, updateProjectDto);
+    try {
+      const updatedProject = await this.projectService.updateProject(id, updateProjectDto);
+      return Response.success(updatedProject);
+    } catch (error) {
+      return Response.error(error.message, 404);
+    }
   }
 
   @Get(':id/users')
@@ -111,53 +104,49 @@ export class ProjectController {
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @UseGuards(JwtAuthGuard)
   async getUsersForProject(@Param('id') projectId: string): Promise<Response> {
-    return this.projectService.getUsersForProject(projectId);
+    try {
+      const users = await this.projectService.getUsersForProject(projectId);
+      return Response.success(users);
+    } catch (error) {
+      return Response.error(error.message, 404);
+    }
   }
-
 
   @EventPattern(rabbitmqConfig.routingKeys.projectRouting)
   async handleProjectMessages(data: any) {
     console.log('Received project message:', data);
     if (data.action === 'CREATE_DEFAULT_PROJECT') {
-      const projectWithCreator = {
-        name: 'Todo List',
-        description: 'This is a your first todolist ',
-        createdBy: data.userId
-      };
-      const project = await this.projectService.createProjectAndAssignRole(projectWithCreator);
+      try {
+        const projectWithCreator = {
+          name: 'Todo List',
+          description: 'This is your first todolist',
+          createdBy: data.userId
+        };
+        await this.projectService.createProjectAndAssignRole(projectWithCreator);
+      } catch (error) {
+        console.error('Failed to create default project:', error.message);
+      }
     } else if (data.action === 'PROJECT_ASSIGNED') {
       const { projectId, userId } = data;
-      //  projectId: projectId , userId: user.id 
       this.projectGateway.sendProjectAssignedUpdate(projectId, userId);
-
     }
   }
 
   @EventPattern('task_updated')
   async handleTaskUpdateEvent(data: any) {
     console.log('Received task message:', data);
-    if (data.action === 'TASK_UPDATED') {
-      const { taskId, update, projectId } = data;
-
-      this.projectGateway.sendTaskUpdate(projectId, taskId, update);
-
-    } else if (data.action === 'TASK_DELETED') {
-      const { taskId, update, projectId } = data;
-      this.projectGateway.sendTaskDelete(projectId, taskId, update);
-
-    }else if (data.action === 'TASK_ADDED') {
-      const { taskId, update, projectId } = data;
-      this.projectGateway.sendTaskAdded(projectId, taskId, update);
-
+    switch (data.action) {
+      case 'TASK_UPDATED':
+        this.projectGateway.sendTaskUpdate(data.projectId, data.taskId, data.update);
+        break;
+      case 'TASK_DELETED':
+        this.projectGateway.sendTaskDelete(data.projectId, data.taskId, data.update);
+        break;
+      case 'TASK_ADDED':
+        this.projectGateway.sendTaskAdded(data.projectId, data.taskId, data.update);
+        break;
+      default:
+        console.warn('Unknown task action:', data.action);
     }
-
-
-
-
-    
   }
-
-
 }
-
-

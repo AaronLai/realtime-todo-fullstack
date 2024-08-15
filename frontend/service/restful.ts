@@ -2,13 +2,21 @@ import axios, { AxiosResponse } from 'axios';
 import { setCookie, getCookie } from 'cookies-next';
 import { ApiResponse, Task , Project} from '../types'; 
 
-const API_BASE_URL = 'http://localhost:4001/users';
-const PROJECT_API_BASE_URL = 'http://localhost:4002/projects';
-const TASK_API_BASE_URL = 'http://localhost:4003/tasks';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4001';
+const PROJECT_API_BASE_URL = process.env.NEXT_PUBLIC_PROJECT_API_BASE_URL || 'http://localhost:4002';
+const TASK_API_BASE_URL = process.env.NEXT_PUBLIC_TASK_API_BASE_URL || 'http://localhost:4003';
+
+// For user-related API calls
+const userEndpoint = `${API_BASE_URL}/users`;
+
+// For project-related API calls
+const projectEndpoint = `${PROJECT_API_BASE_URL}/projects`;
+
+// For task-related API calls
+const taskEndpoint = `${TASK_API_BASE_URL}/tasks`;
 
 
 const axiosInstance = axios.create({
-  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
     'Accept': '*/*',
@@ -61,14 +69,23 @@ const setAuthToken = (token: string) => {
 };
 
 export const api = {
-  signin: async (username: string, password: string) => {
-    const response = await apiCall<{ user: any; token: string }>('/signin', 'POST', { username, password });
+  signin: async (username: string, password: string): Promise<ApiResponse<{ user: any; token: string }>> => {
+    const response = await apiCall<{ user: any; token: string }>(
+      '/signin',
+      'POST',
+      { username, password },
+      false,
+      { baseURL: userEndpoint } // Assuming you have an authEndpoint defined
+    );
+    
     if (response.status === 200 && response.data.token) {
       console.log('Signin done response:', response.status, response.data);
       setAuthToken(response.data.token);
     }
+    
     return response;
   },
+  
 
   getProjects: async (): Promise<ApiResponse<Project[]>> => {
     return apiCall<Project[]>(
@@ -76,7 +93,7 @@ export const api = {
       'GET',
       undefined,
       true,
-      { baseURL: PROJECT_API_BASE_URL }
+      { baseURL: projectEndpoint }
     );
   },
   signup: async (username: string, password: string) => {
@@ -101,7 +118,7 @@ export const api = {
       'POST',
       taskData,
       true,
-      { baseURL: TASK_API_BASE_URL }
+      { baseURL: taskEndpoint }
     );
   },
 
@@ -111,7 +128,7 @@ export const api = {
       'GET',
       undefined,
       true,
-      { baseURL: TASK_API_BASE_URL }
+      { baseURL: taskEndpoint }
     );
   },
   updateTask: async (taskId: string, updateData: Partial<Task>): Promise<ApiResponse<Task>> => {
@@ -120,7 +137,7 @@ export const api = {
       'PUT',
       updateData,
       true,
-      { baseURL: TASK_API_BASE_URL }
+      { baseURL: taskEndpoint }
     );
   },
   deleteTask: async (taskId: string): Promise<ApiResponse<void>> => {
@@ -129,7 +146,7 @@ export const api = {
       'DELETE',
       undefined,
       true,
-      { baseURL: TASK_API_BASE_URL }
+      { baseURL: taskEndpoint }
     );
   },createProject: async (projectData: { name: string; description: string }): Promise<ApiResponse<any>> => {
     return apiCall<any>(
@@ -137,7 +154,7 @@ export const api = {
       'POST',
       projectData,
       true,
-      { baseURL: PROJECT_API_BASE_URL }
+      { baseURL: projectEndpoint }
     );
   },
   assignRoleToUser: async (projectId: string, role: string, username: string): Promise<ApiResponse<any>> => {
@@ -146,7 +163,7 @@ export const api = {
       'POST',
       { username },
       true,
-      { baseURL: PROJECT_API_BASE_URL }
+      { baseURL: projectEndpoint }
     );
   },
   getProjectUsers: async (projectId: string): Promise<ApiResponse<any[]>> => {
@@ -155,7 +172,7 @@ export const api = {
       'GET',
       undefined,
       true,
-      { baseURL: PROJECT_API_BASE_URL }
+      { baseURL: projectEndpoint }
     );
   },
   // Add other API calls here as needed

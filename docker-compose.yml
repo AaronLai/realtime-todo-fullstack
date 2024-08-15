@@ -2,33 +2,81 @@ version: '3.8'
 
 services:
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "4000:4000"  
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    environment:
-      - PORT=4000
-      - NEXT_PUBLIC_API_URL=http://backend:4020  # Changed from 3001 to 4020
-
-  backend:
+      build:
+        context: ./frontend
+        dockerfile: Dockerfile
+      ports:
+        - "4000:4000"  
+      volumes:
+        - ./frontend:/app
+        - /app/node_modules
+        - /app/public/fonts  # This prevents the host from overwriting the downloaded fonts
+      environment:
+        - PORT=4000
+      env_file:
+        - ./frontend/.env.development
+  user-service:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      args:
+        NODE_VERSION: 20
+        START_CMD: "start:user:prod"
+        PORT: 4001
     ports:
-      - "4020:4020"  
+      - "4001:4001"
     depends_on:
       - postgres
-      - redis
       - rabbitmq
+    env_file:
+      - ./backend/.env.development
     environment:
-      - PORT=4000
-      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/tododb
-      - REDIS_URL=redis://redis:6379
-      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - START_CMD=start:user:prod
+      - PORT=4001
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  project-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        NODE_VERSION: 20
+        START_CMD: "start:project:prod"
+        PORT: 4002
+    ports:
+      - "4002:4002"
+    depends_on:
+      - postgres
+      - rabbitmq
+    env_file:
+      - ./backend/.env.development
+    environment:
+      - START_CMD=start:project:prod
+      - PORT=4002
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  task-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        NODE_VERSION: 20
+        START_CMD: "start:task:prod"
+        PORT: 4003
+    ports:
+      - "4003:4003"
+    depends_on:
+      - postgres
+      - rabbitmq
+    env_file:
+      - ./backend/.env.development
+    environment:
+      - START_CMD=start:task:prod
+      - PORT=4003
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -43,11 +91,6 @@ services:
       - postgres-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-
-  redis:
-    image: redis:6
-    ports:
-      - "6379:6379"
 
   rabbitmq:
     image: rabbitmq:3-management
