@@ -13,6 +13,7 @@ services:
         - /app/public/fonts  # This prevents the host from overwriting the downloaded fonts
       environment:
         - PORT=4000
+        - NODE_ENV=production
       env_file:
         - ./frontend/.env.prod
   user-service:

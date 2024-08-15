@@ -1,63 +1,65 @@
 ```mermaid
-
 erDiagram
-    Users ||--o{ UserProjectRoles : has
-    Projects ||--o{ UserProjectRoles : contains
-    Roles ||--o{ UserProjectRoles : defines
-    Users ||--o{ Tasks : creates
-    Users ||--o{ Tasks : assigned_to
-    Users ||--o{ Projects : creates
-    Roles ||--o{ RolePermissions : has
-    Permissions ||--o{ RolePermissions : associated_with
-    Projects ||--o{ Tasks : contains
+    User ||--o{ UserProjectRole : has
+    User ||--o{ Task : creates
+    User ||--o{ Task : "assigned to"
+    User ||--o{ Project : creates
+    Project ||--o{ UserProjectRole : has
+    Project ||--o{ Task : contains
+    Role ||--o{ UserProjectRole : has
+    Role ||--o{ RolePermission : has
+    Permission ||--o{ RolePermission : has
 
-    Users {
-        int id PK
+    User {
+        uuid id PK
         string username
         string password
-        string email
+        datetime createdAt
+        datetime updatedAt
     }
 
-    Projects {
-        int id PK
+    Project {
+        uuid id PK
         string name
         string description
-        int created_by FK
+        datetime createdAt
+        datetime updatedAt
+        uuid createdById FK
     }
 
-    Roles {
-        int id PK
-        string name
-    }
-
-    UserProjectRoles {
-        int id PK
-        int user_id FK
-        int project_id FK
-        int role_id FK
-    }
-
-    Permissions {
-        int id PK
-        string name
-    }
-
-    RolePermissions {
-        int id PK
-        int role_id FK
-        int permission_id FK
-    }
-
-    Tasks {
-        int id PK
+    Task {
+        uuid id PK
         string name
         string description
         string status
-        date due_date
-        int project_id FK
-        int assigned_to FK
-        int created_by FK
+        date dueDate
+        string[] tags
+        string priority
+        datetime createdAt
+        datetime updatedAt
+        uuid projectId FK
+        uuid assignedToId FK
+        uuid createdById FK
     }
 
+    UserProjectRole {
+        string id PK
+        datetime createdAt
+        datetime updatedAt
+        uuid createdById FK
+    }
 
+    Role {
+        string id PK
+        string name
+    }
+
+    Permission {
+        int id PK
+        string name
+    }
+
+    RolePermission {
+        uuid id PK
+    }
 ```
