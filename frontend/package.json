@@ -3,6 +3,8 @@
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
+		"test": "jest",
+
 		"dev": "next dev --turbo",
 		"build": "next build",
 		"start": "next start -H 0.0.0.0 ",
@@ -24,19 +26,22 @@
 		"@nextui-org/theme": "2.2.9",
 		"@react-aria/ssr": "3.9.4",
 		"@react-aria/visually-hidden": "3.8.12",
+		"@types/jest": "^29.5.12",
 		"axios": "^1.7.3",
 		"clsx": "2.1.1",
 		"cookies-next": "^4.2.1",
 		"date-fns": "^3.6.0",
 		"framer-motion": "^11.3.24",
 		"intl-messageformat": "^10.5.0",
+		"jest": "^29.7.0",
 		"lucide-react": "^0.427.0",
 		"next": "14.2.4",
 		"next-themes": "^0.2.1",
 		"react": "18.3.1",
 		"react-dom": "18.3.1",
 		"react-hot-toast": "^2.4.1",
-		"socket.io-client": "^4.7.5"
+		"socket.io-client": "^4.7.5",
+		"ts-jest": "^29.2.4"
 	},
 	"devDependencies": {
 		"@types/node": "20.5.7",

@@ -18,34 +18,36 @@ export default function AuthForm() {
     e.preventDefault();
     setError("");
     setMessage("");
-
+  
     if (!isLogin && password !== confirmPassword) {
       setError("Passwords do not match.");
       return;
     }
-
+  
     try {
-      let response;
       if (isLogin) {
-        response = await api.signin(username, password);
-      } else {
-        response = await api.signup(username, password);
-      }
-      console.log(response);
-
-      if (response.status === 200) {
-        if (isLogin && response.data.token) {
+        const response = await api.signin(username, password);
+        console.log("Signin response:", response);
+  
+        if (response.status === 200 && response.data?.token) {
           console.log("Login successful!");
           window.location.href = '/board';
-        } else if (!isLogin) {
+        } else {
+          setError(response.error || "Login failed. Please check your credentials.");
+        }
+      } else {
+        const response = await api.signup(username, password);
+        console.log("Signup response:", response);
+  
+        if (response.status === 201) {
           console.log("Registration successful!");
           setMessage("Registration successful! Please login.");
           setIsLogin(true);
           setPassword("");
           setConfirmPassword("");
+        } else {
+          setError(response.error || "Registration failed. Please try again.");
         }
-      } else {
-        setError(response.error || `${isLogin ? "Login" : "Registration"} failed. Please check your credentials.`);
       }
     } catch (err) {
       console.error(`${isLogin ? "Login" : "Registration"} error:`, err);

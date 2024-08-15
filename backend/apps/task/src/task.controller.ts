@@ -4,14 +4,14 @@ import { TaskService } from './task.service';
 import { Response } from '@utils/response';
 import { JwtAuthGuard } from '@auth/auth/jwt-auth.guard';
 import { UserPayload } from '@auth/auth/auth.decorator';
-import { CreateTaskDto, UpdateTaskDto, TaskResponseDto , TaskStatus } from './task.dto';
+import { CreateTaskDto, UpdateTaskDto, TaskResponseDto, TaskStatus } from './task.dto';
 
 @ApiTags('tasks')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('tasks')
 export class TaskController {
-  constructor(private readonly taskService: TaskService) { }
+  constructor(private readonly taskService: TaskService) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new task' })
@@ -20,15 +20,17 @@ export class TaskController {
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   async createTask(@UserPayload() user: any, @Body() taskData: CreateTaskDto): Promise<Response> {
-    const taskWithCreator = {
-      ...taskData,
-      status:TaskStatus.TODO,
-      createdById: user.userId,
-   
-    };
-
-    console.log('Task with creator', taskWithCreator);
-    return this.taskService.createTask(taskWithCreator);
+    try {
+      const taskWithCreator = {
+        ...taskData,
+        status: TaskStatus.TODO,
+        createdById: user.userId,
+      };
+      const task = await this.taskService.createTask(taskWithCreator);
+      return Response.success(task, 201);
+    } catch (error) {
+      return Response.error(error.message, 400);
+    }
   }
 
   @Get(':id')
@@ -38,7 +40,12 @@ export class TaskController {
   @ApiResponse({ status: 404, description: 'Task not found.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   async getTask(@Param('id') id: string): Promise<Response> {
-    return this.taskService.getTask(id);
+    try {
+      const task = await this.taskService.getTask(id);
+      return Response.success(task);
+    } catch (error) {
+      return Response.error(error.message, 404);
+    }
   }
 
   @Put(':id')
@@ -49,7 +56,12 @@ export class TaskController {
   @ApiResponse({ status: 404, description: 'Task not found.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   async updateTask(@Param('id') id: string, @Body() taskData: UpdateTaskDto): Promise<Response> {
-    return this.taskService.updateTask(id, taskData);
+    try {
+      const updatedTask = await this.taskService.updateTask(id, taskData);
+      return Response.success(updatedTask);
+    } catch (error) {
+      return Response.error(error.message, 404);
+    }
   }
 
   @Delete(':id')
@@ -59,7 +71,12 @@ export class TaskController {
   @ApiResponse({ status: 404, description: 'Task not found.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   async deleteTask(@Param('id') id: string): Promise<Response> {
-    return this.taskService.deleteTask(id);
+    try {
+      await this.taskService.deleteTask(id);
+      return Response.success('Task deleted successfully');
+    } catch (error) {
+      return Response.error(error.message, 404);
+    }
   }
 
   @Get('project/:projectId')
@@ -68,8 +85,11 @@ export class TaskController {
   @ApiResponse({ status: 200, description: 'The tasks have been successfully retrieved.', type: [TaskResponseDto] })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   async getTasksByProject(@Param('projectId') projectId: string): Promise<Response> {
-    return this.taskService.getTasksByProject(projectId); }
-
+    try {
+      const tasks = await this.taskService.getTasksByProject(projectId);
+      return Response.success(tasks);
+    } catch (error) {
+      return Response.error(error.message, 400);
+    }
   }
-  
-  
+}

@@ -1,221 +1,37 @@
-"use client";
+'use client'
+
 import React, { useState, useEffect } from "react";
-import { Tabs, Tab, Card, CardBody, Button, Textarea, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Input, Avatar, Select, SelectItem } from "@nextui-org/react";
+import { Tabs, Tab, Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Input, Avatar, Select, SelectItem } from "@nextui-org/react";
 import { PlusIcon } from "lucide-react";
+import { Toaster } from 'react-hot-toast';
 import { api } from "@/service/restful";
 import { Task, User, Project } from '../../types';
 import AddTaskForm from '../../components/add-task-form';
 import TaskCard from '../../components/task-card';
-import toast, { Toaster } from 'react-hot-toast';
 import { createSocket } from '@/service/socket';
+import { useProjects } from '../hooks/useProjects';
+import { useTasks } from '../hooks/useTasks';
+import { useUsers } from '../hooks/useUsers';
+import { useSocketListeners } from "../hooks/useSocketListeners";
 
 const BoardPage: React.FC = () => {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const { projects, selectedProject, setSelectedProject, handleAddProject } = useProjects();
+  const { tasks, handleAddTask, handleTaskDelete, handleTaskUpdate } = useTasks(selectedProject);
+  const { users, handleAddUser } = useUsers(selectedProject);
+  const socket = useSocketListeners(selectedProject);
+
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
   const [newProjectName, setNewProjectName] = useState("");
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
   const [newUsername, setNewUsername] = useState("");
-  const [users, setUsers] = useState<User[]>([]);
   const [newUserRole, setNewUserRole] = useState("");
 
+  const roles = ["Admin", "Member", "Viewer"];
 
-  useEffect(() => {
-    fetchProjects();
-  }, []);
-  const [socket, setSocket] = useState<any>(null);
-  useEffect(() => {
-    console.log('Tasks state updated:', tasks);
-  }, [tasks]);
-  useEffect(() => {
-    const newSocket = createSocket();
-    setSocket(newSocket);
-
-    newSocket.on('connect', () => {
-      console.log('Connected to Socket.IO server');
-    });
-
-    newSocket.on('disconnect', () => {
-      console.log('Disconnected from Socket.IO server');
-    });
-
-    newSocket.on('taskUpdate', handleUpdate);
-
-    newSocket.on('projectAssginedUpdate', handleProjectUpdate);
-
-    return () => {
-      newSocket.off('taskUpdate');
-      newSocket.off('projectAssignedUpdate');
-      newSocket.disconnect();
-    };
-  }, []);
-
-
-  const handleProjectUpdate = (update: any) => {
-    fetchProjects();
-    console.log('Handling projectAssginedUpdate', update);
-    toast.success(`A new TodoList is shared with you!`);
-
-
-  }
-  const handleUpdate = (update: any) => {
-    console.log('Received update:', update);
-    console.log('Received update type:', update.type);
-
-    if (update.type === 'taskUpdate') {
-      console.log('Handling taskUpdate');
-
-      setTasks(prevTasks => prevTasks.map(task =>
-        task.id === update.data.taskId ? { ...task, ...update.data.update } : task
-      ));
-      toast.success(`Task "${update.data.update.name}" updated!`);
-
-    } else if (update.type === 'taskAdded') {
-      console.log('Handling taskAdded');
-      setTasks(prevTasks => [...prevTasks, update.data.update]);
-      toast.success(`New task "${update.data.update.name}" added!`);
-  
-
-
-    } else if (update.type === 'taskDelete') {
-      console.log('Handling taskDelete');
-      setTasks(prevTasks => prevTasks.filter(task => task.id !== update.data.taskId));
-      toast.success(`Task deleted successfully!`);
-  
-    }else {
-      console.log('Unhandled update type:', update.type);
-    }
-  };
-  useEffect(() => {
-    if (socket && selectedProject) {
-      socket.emit('joinProject', selectedProject);
-
-      return () => {
-        socket.emit('leaveProject', selectedProject);
-      };
-    }
-  }, [socket, selectedProject]);
-  useEffect(() => {
-    if (selectedProject) {
-      fetchTasks(selectedProject);
-      fetchProjectUsers(selectedProject);
-
-    }
-  }, [selectedProject]);
-
-
-
-
-  const fetchProjectUsers = async (projectId: string) => {
-    try {
-      const response = await api.getProjectUsers(projectId);
-      if (response.status === 200 && Array.isArray(response.data)) {
-        setUsers(response.data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch project users:", error);
-    }
-  };
-
-
-  const fetchProjects = async () => {
-    console.log("fetchProjects");
-
-    try {
-      const response = await api.getProjects();
-      if (response.status === 200 && Array.isArray(response.data)) {
-        setProjects(prevProjects => {
-          const newProjects = response.data;
-
-          // Keep the selected project if it still exists in the new project list
-          if (selectedProject) {
-            return newProjects;
-          }
-
-          // If the selected project no longer exists, select the first project
-          if (newProjects.length <= 0) {
-            setSelectedProject(null)
-          }
-
-          return newProjects;
-        });
-      }
-    } catch (error) {
-      console.error("Failed to fetch projects:", error);
-    }
-  };
-
-  const fetchTasks = async (projectId: string) => {
-    try {
-      const response = await api.getTasksByProjectId(projectId);
-      if (response.status === 200 && Array.isArray(response.data)) {
-        setTasks(response.data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch tasks:", error);
-    }
-  };
-
-  const handleAddTask = async (newTask: Omit<Task, 'id'>) => {
-    if (!selectedProject) {
-      console.error("No project selected");
-      return;
-    }
-
-    try {
-      const taskWithProject = { ...newTask, projectId: selectedProject };
-      const response = await api.createTask(taskWithProject);
-
-      if (response.status === 201 && response.data) {
-        // setTasks(prevTasks => [...prevTasks, response.data]);
-      } else {
-        console.error('Unexpected response:', response);
-      }
-    } catch (error) {
-      console.error("Failed to add task:", error);
-    }
-  };
-
-  const handleTaskDelete = async (taskId: string) => {
-    try {
-      const response = await api.deleteTask(taskId);
-      if (response.status === 200) {
-        setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
-      } else {
-        console.error('Failed to delete task:', response.error);
-      }
-    } catch (error) {
-      console.error("Failed to delete task:", error);
-    }
-  };
-
-  const handleTaskUpdate = async (taskId: string, updateData: Partial<Task>) => {
-    try {
-      const response = await api.updateTask(taskId, updateData);
-      if (response.status === 200 && response.data) {
-        setTasks(prevTasks =>
-          prevTasks.map(task =>
-            task.id === taskId ? { ...task, ...updateData } : task
-          )
-        );
-      } else {
-        console.error('Unexpected response:', response);
-      }
-    } catch (error) {
-      console.error("Failed to update task:", error);
-    }
-  };
-
-  // New component for avatar list
   const AvatarList: React.FC<{ users: User[] }> = ({ users }) => (
     <div className="flex gap-3 items-center mb-8">
       {users.map((user) => (
-        <Avatar
-          isBordered
-          key={user.id}
-          name={user.username}
-        />
+        <Avatar key={user.id} isBordered name={user.username} />
       ))}
       <Button
         isIconOnly
@@ -229,66 +45,11 @@ const BoardPage: React.FC = () => {
     </div>
   );
 
-
-
-  const handleAddUser = async () => {
-    if (!newUsername.trim() || !newUserRole || !selectedProject) {
-      console.error("Username, role, and selected project are required");
-      return;
-    }
-
-    try {
-      // First, create the user (you might need to adjust this part based on your actual user creation API)
-      const newUser: User = {
-        id: (users.length + 1).toString(),
-        username: newUsername.trim()
-      };
-
-      // Then, assign the role to the user
-      const response = await api.assignRoleToUser(selectedProject, newUserRole, newUsername.trim());
-
-      if (response.status === 200) {
-        setUsers([...users, newUser]);
-        setNewUsername("");
-        setNewUserRole("");
-        setIsAddUserModalOpen(false);
-        console.log(`User ${newUsername} added with role ${newUserRole} to project ${selectedProject}`);
-      } else {
-        console.error('Failed to assign role to user:', response.error);
-      }
-    } catch (error) {
-      console.error("Failed to add user or assign role:", error);
-    }
-  };
-  const roles = ["Admin", "Member", "Viewer"];
-
-
-  const handleAddProject = async () => {
-    if (!newProjectName.trim()) {
-      console.error("Project name cannot be empty");
-      return;
-    }
-
-    try {
-      const response = await api.createProject({ name: newProjectName, description: "" });
-      if (response.status === 201 && response.data) {
-        setProjects(prevProjects => [...prevProjects, response.data]);
-        setSelectedProject(response.data.id);
-        setIsNewProjectModalOpen(false);
-        setNewProjectName("");
-      } else {
-        console.error('Unexpected response:', response);
-      }
-    } catch (error) {
-      console.error("Failed to add project:", error);
-    }
-  };
-
   return (
     <div className="w-full p-4">
       <Toaster position="top-right" />
-
       <h2 className="text-2xl font-bold mb-4">Welcome to ToDo List!</h2>
+      
       <div className="flex justify-between items-center mb-4">
         <Tabs
           variant="underlined"
@@ -298,9 +59,7 @@ const BoardPage: React.FC = () => {
           className="flex-grow"
         >
           {projects.map((project) => (
-            <Tab key={project.id} title={project.name}>
-              {/* Tab content */}
-            </Tab>
+            <Tab key={project.id} title={project.name} />
           ))}
         </Tabs>
         <Button
@@ -312,11 +71,13 @@ const BoardPage: React.FC = () => {
           New Project
         </Button>
       </div>
+
       {selectedProject && (
         <div className="mt-4 w-full">
-          <h3 className="text-xl font-semibold mb-4">{projects.find(p => p.id === selectedProject)?.name}</h3>
+          <h3 className="text-xl font-semibold mb-4">
+            {projects.find(p => p.id === selectedProject)?.name}
+          </h3>
           <AvatarList users={users} />
-
 
           {tasks.length === 0 ? (
             <p className="mt-4">No tasks yet. Add some above!</p>
@@ -337,6 +98,7 @@ const BoardPage: React.FC = () => {
           </div>
         </div>
       )}
+
       <Modal isOpen={isNewProjectModalOpen} onClose={() => setIsNewProjectModalOpen(false)}>
         <ModalContent>
           <ModalHeader>Create New Project</ModalHeader>
@@ -352,9 +114,10 @@ const BoardPage: React.FC = () => {
             <Button color="danger" variant="light" onClick={() => setIsNewProjectModalOpen(false)}>
               Cancel
             </Button>
-            <Button color="primary" onClick={handleAddProject}>
-              Create Project
-            </Button>
+            <Button color="primary" onClick={() => handleAddProject(newProjectName, () => setIsNewProjectModalOpen(false))}>
+  Create Project
+</Button>
+
           </ModalFooter>
         </ModalContent>
       </Modal>
@@ -387,14 +150,13 @@ const BoardPage: React.FC = () => {
             <Button color="danger" variant="light" onClick={() => setIsAddUserModalOpen(false)}>
               Cancel
             </Button>
-            <Button color="primary" onClick={handleAddUser}>
-              Add User
-            </Button>
+            <Button color="primary" onClick={() => handleAddUser(newUsername, newUserRole, () => setIsAddUserModalOpen(false))}>
+  Add User
+</Button>
+
           </ModalFooter>
         </ModalContent>
       </Modal>
-
-
     </div>
   );
 };

@@ -1,32 +1,28 @@
 import axios, { AxiosResponse } from 'axios';
 import { setCookie, getCookie } from 'cookies-next';
-import { ApiResponse, Task , Project} from '../types'; 
+import { ApiResponse, Task, Project } from '../types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4001';
 const PROJECT_API_BASE_URL = process.env.NEXT_PUBLIC_PROJECT_API_BASE_URL || 'http://localhost:4002';
 const TASK_API_BASE_URL = process.env.NEXT_PUBLIC_TASK_API_BASE_URL || 'http://localhost:4003';
 
-// For user-related API calls
 const userEndpoint = `${API_BASE_URL}/users`;
-
-// For project-related API calls
 const projectEndpoint = `${PROJECT_API_BASE_URL}/projects`;
-
-// For task-related API calls
 const taskEndpoint = `${TASK_API_BASE_URL}/tasks`;
 
+type SigninResponse = {
+  user: any;
+  token: string;
+};
 
-const axiosInstance = axios.create({
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': '*/*',
-  },
-});
+type SignupResponse = {
+  data: any;
+};
 
 async function apiCall<T>(
-  endpoint: string, 
-  method: string, 
-  body?: any, 
+  endpoint: string,
+  method: string,
+  body?: any,
   useAuth: boolean = false,
   additionalConfig: any = {}
 ): Promise<ApiResponse<T>> {
@@ -34,22 +30,26 @@ async function apiCall<T>(
     const config: any = {
       url: endpoint,
       method,
-      data: body,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': '*/*',
+      },
       ...additionalConfig,
     };
+
+    if (body) {
+      config.data = body;
+    }
 
     if (useAuth) {
       const token = getCookie('authToken');
       if (!token) {
         throw new Error('No authentication token found');
       }
-      config.headers = {
-        ...config.headers,
-        'Authorization': `Bearer ${token}`,
-      };
+      config.headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response: AxiosResponse<ApiResponse<T>> = await axiosInstance(config);
+    const response: AxiosResponse<ApiResponse<T>> = await axios(config);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
@@ -69,23 +69,36 @@ const setAuthToken = (token: string) => {
 };
 
 export const api = {
-  signin: async (username: string, password: string): Promise<ApiResponse<{ user: any; token: string }>> => {
-    const response = await apiCall<{ user: any; token: string }>(
+  signin: async (username: string, password: string): Promise<ApiResponse<SigninResponse>> => {
+    const response = await apiCall<SigninResponse>(
       '/signin',
       'POST',
       { username, password },
       false,
-      { baseURL: userEndpoint } // Assuming you have an authEndpoint defined
+      { baseURL: userEndpoint }
     );
     
-    if (response.status === 200 && response.data.token) {
+    if (response.status === 200 && response.data?.token) {
       console.log('Signin done response:', response.status, response.data);
       setAuthToken(response.data.token);
     }
     
     return response;
   },
-  
+
+  signup: async (username: string, password: string): Promise<ApiResponse<SignupResponse>> => {
+    console.log('signup', username, password);
+    const response = await apiCall<SignupResponse>(
+      '/register',
+      'POST',
+      { username, password },
+      false,
+      { baseURL: userEndpoint }
+    );
+    
+    console.log('Signup response:', response.status);
+    return response;
+  },
 
   getProjects: async (): Promise<ApiResponse<Project[]>> => {
     return apiCall<Project[]>(
@@ -96,14 +109,7 @@ export const api = {
       { baseURL: projectEndpoint }
     );
   },
-  signup: async (username: string, password: string) => {
-    const response = await apiCall<{ user: any; token: string }>('/register', 'POST', { username, password });
-    if (response.status === 200 && response.data.token) {
-      console.log('Signup done response:', response.status, response.data);
-      setAuthToken(response.data.token);
-    }
-    return response;
-  },
+
   createTask: async (taskData: {
     name: string;
     description: string;
@@ -131,6 +137,7 @@ export const api = {
       { baseURL: taskEndpoint }
     );
   },
+
   updateTask: async (taskId: string, updateData: Partial<Task>): Promise<ApiResponse<Task>> => {
     return apiCall<Task>(
       `/${taskId}`,
@@ -140,6 +147,7 @@ export const api = {
       { baseURL: taskEndpoint }
     );
   },
+
   deleteTask: async (taskId: string): Promise<ApiResponse<void>> => {
     return apiCall<void>(
       `/${taskId}`,
@@ -148,7 +156,9 @@ export const api = {
       true,
       { baseURL: taskEndpoint }
     );
-  },createProject: async (projectData: { name: string; description: string }): Promise<ApiResponse<any>> => {
+  },
+
+  createProject: async (projectData: { name: string; description: string }): Promise<ApiResponse<any>> => {
     return apiCall<any>(
       '/',
       'POST',
@@ -157,6 +167,7 @@ export const api = {
       { baseURL: projectEndpoint }
     );
   },
+
   assignRoleToUser: async (projectId: string, role: string, username: string): Promise<ApiResponse<any>> => {
     return apiCall<any>(
       `/${projectId}/assign/${role}`,
@@ -166,6 +177,7 @@ export const api = {
       { baseURL: projectEndpoint }
     );
   },
+
   getProjectUsers: async (projectId: string): Promise<ApiResponse<any[]>> => {
     return apiCall<any[]>(
       `/${projectId}/users`,
@@ -175,5 +187,4 @@ export const api = {
       { baseURL: projectEndpoint }
     );
   },
-  // Add other API calls here as needed
 };

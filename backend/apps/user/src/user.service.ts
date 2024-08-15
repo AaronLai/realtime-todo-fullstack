@@ -1,39 +1,35 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { AuthService } from '@auth/auth/auth.service';
-import { Response } from '@utils/response';
 import { ErrorCodes } from '@utils/error-codes';
 import { rabbitmqConfig } from '@shared';
-import { EventPattern } from '@nestjs/microservices';
 
 @Injectable()
 export class UserService {
   constructor(
     private authService: AuthService,
-    @Inject('PROJECT_SERVICE') private projectClient: ClientProxy  ) {}
+    @Inject('PROJECT_SERVICE') private projectClient: ClientProxy
+  ) {}
 
-   
-  async validateUser(username: string, password: string): Promise<Response> {
+  async validateUser(username: string, password: string): Promise<any> {
     const result = await this.authService.validateUser(username, password);
     if ('error' in result) {
-      return Response.error(result.error, 400);
+      throw new Error(result.error);
     }
-    return Response.success(result);
+    return result;
   }
 
-  async registerUser(username: string, password: string): Promise<Response> {
+  async registerUser(username: string, password: string): Promise<any> {
     const result = await this.authService.registerUser(username, password);
     if ('error' in result) {
       if (result.errorCode === ErrorCodes.USER_EXISTS) {
-        return Response.badRequest(result.error);
+        throw new Error(result.error);
       }
-      return Response.error(result.error);
+      throw new Error(result.error);
     }
 
-    // If registration is successful, send a message to the project queue
     await this.sendNewUserProjectMessage(result.id);
-
-    return Response.success(result, 200);
+    return result;
   }
 
   private async sendNewUserProjectMessage(userId: string): Promise<void> {
