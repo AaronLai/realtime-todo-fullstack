@@ -3,7 +3,6 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ProjectModule } from './project.module';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { Logger } from '@nestjs/common';
 import { LoggingMiddleware } from "@utils/logging.middleware";
 import { rabbitmqConfig } from '@shared';
 import { DataService } from '@data/data.service';
@@ -12,7 +11,8 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
 async function bootstrap() {
   const app = await NestFactory.create(ProjectModule);
   const configService = app.get(ConfigService);
-  const port = configService.get<number>('PROJECT_SERVICE_PORT');
+  const PORT = process.env.PORT || 4002;
+  const HOST = process.env.HOST || '0.0.0.0';
   const environment = process.env.NODE_ENV || 'development';
 
   // RabbitMQ Microservice Connection
@@ -27,10 +27,7 @@ async function bootstrap() {
     },
   });
 
-  
-
   app.useWebSocketAdapter(new IoAdapter(app));
-
 
   app.enableCors();
 
@@ -53,11 +50,10 @@ async function bootstrap() {
   const dataService = app.get(DataService);
   await dataService.seedRoles();
 
-  
   await app.startAllMicroservices();
-  await app.listen(port || 4002);
+  await app.listen(PORT, HOST);
 
-  console.log(`Application is running on: ${await app.getUrl()} with environment: ${environment}`);
+  console.log(`Application is running on: http://${HOST}:${PORT} with environment: ${environment}`);
   console.log(`RabbitMQ Microservice is listening`);
 }
 

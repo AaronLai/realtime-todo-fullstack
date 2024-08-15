@@ -3,14 +3,15 @@ import { TaskModule } from './task.module';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { Logger } from '@nestjs/common';
-import { LoggingMiddleware } from "@utils/logging.middleware"; // Import the middleware
+import { LoggingMiddleware } from "@utils/logging.middleware";
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { rabbitmqConfig } from '@shared';
 
 async function bootstrap() {
   const app = await NestFactory.create(TaskModule);
   const configService = app.get(ConfigService);
-  const port = configService.get<number>('TASK_SERVICE_PORT');
+  const PORT = process.env.PORT || 4003;
+  const HOST = process.env.HOST || '0.0.0.0';
   const environment = process.env.NODE_ENV || 'development';
 
   app.enableCors();
@@ -26,7 +27,6 @@ async function bootstrap() {
     },
   });
 
-
   // Enable logging for local and development environments
   if (environment === 'development' || environment === 'local') {
     app.use(new LoggingMiddleware().use);
@@ -41,9 +41,12 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
-  await app.startAllMicroservices();
 
-  await app.listen(port || 4003);
-  console.log(`Application is running on: ${await app.getUrl()} with environment: ${environment}`);
+  await app.startAllMicroservices();
+  await app.listen(PORT, HOST);
+
+  console.log(`Application is running on: http://${HOST}:${PORT} with environment: ${environment}`);
+  console.log(`RabbitMQ Microservice is listening`);
 }
+
 bootstrap();

@@ -10,7 +10,8 @@ import { rabbitmqConfig } from '@shared';
 async function bootstrap() {
   const app = await NestFactory.create(UserModule);
   const configService = app.get(ConfigService);
-  const port = configService.get<number>('USER_SERVICE_PORT');
+  const PORT = process.env.PORT || 4001;
+  const HOST = process.env.HOST || '0.0.0.0';
   const environment = process.env.NODE_ENV || 'development';
 
   // RabbitMQ Microservice Connection
@@ -24,7 +25,6 @@ async function bootstrap() {
       },
     },
   });
-
 
   app.enableCors();
 
@@ -44,9 +44,9 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   await app.startAllMicroservices();
-  await app.listen(port || 3001);
+  await app.listen(PORT, HOST);
 
-  console.log(`Application is running on: ${await app.getUrl()} with environment: ${environment}`);
+  console.log(`Application is running on: http://${HOST}:${PORT} with environment: ${environment}`);
   console.log(`RabbitMQ Microservice is listening`);
 }
 
