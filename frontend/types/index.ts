@@ -28,3 +28,13 @@ export interface User {
   id: string;
   username: string;
 }
+
+export interface Project {
+  id?: string;
+  name: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+  createdById: string;
+  role: string; 
+}

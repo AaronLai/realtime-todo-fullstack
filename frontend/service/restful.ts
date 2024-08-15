@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import { setCookie, getCookie } from 'cookies-next';
-import { ApiResponse, Task } from '../types'; 
+import { ApiResponse, Task , Project} from '../types'; 
 
 const API_BASE_URL = 'http://localhost:4001/users';
 const PROJECT_API_BASE_URL = 'http://localhost:4002/projects';
@@ -70,8 +70,8 @@ export const api = {
     return response;
   },
 
-  getProjects: async () => {
-    return apiCall<{ status: number; data: any[]; error: string | null }>(
+  getProjects: async (): Promise<ApiResponse<Project[]>> => {
+    return apiCall<Project[]>(
       '/mine',
       'GET',
       undefined,
@@ -79,7 +79,6 @@ export const api = {
       { baseURL: PROJECT_API_BASE_URL }
     );
   },
-
   signup: async (username: string, password: string) => {
     const response = await apiCall<{ user: any; token: string }>('/register', 'POST', { username, password });
     if (response.status === 200 && response.data.token) {

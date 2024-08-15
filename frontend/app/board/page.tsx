@@ -3,18 +3,11 @@ import React, { useState, useEffect } from "react";
 import { Tabs, Tab, Card, CardBody, Button, Textarea, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Input, Avatar, Select, SelectItem } from "@nextui-org/react";
 import { PlusIcon } from "lucide-react";
 import { api } from "@/service/restful";
-import { Task, User } from '../../types';
+import { Task, User, Project } from '../../types';
 import AddTaskForm from '../../components/add-task-form';
 import TaskCard from '../../components/task-card';
-import { io } from 'socket.io-client';
 import toast, { Toaster } from 'react-hot-toast';
-
-const SOCKET_URL = 'http://localhost:4002';
-
-interface Project {
-  id: string;
-  name: string;
-}
+import { createSocket } from '@/service/socket';
 
 const BoardPage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -36,7 +29,7 @@ const BoardPage: React.FC = () => {
     console.log('Tasks state updated:', tasks);
   }, [tasks]);
   useEffect(() => {
-    const newSocket = io(SOCKET_URL);
+    const newSocket = createSocket();
     setSocket(newSocket);
 
     newSocket.on('connect', () => {
@@ -49,11 +42,23 @@ const BoardPage: React.FC = () => {
 
     newSocket.on('taskUpdate', handleUpdate);
 
+    newSocket.on('projectAssginedUpdate', handleProjectUpdate);
+
     return () => {
-      newSocket.off('projectUpdate');
+      newSocket.off('taskUpdate');
+      newSocket.off('projectAssignedUpdate');
       newSocket.disconnect();
     };
   }, []);
+
+
+  const handleProjectUpdate = (update: any) => {
+    fetchProjects();
+    console.log('Handling projectAssginedUpdate', update);
+    toast.success(`A new TodoList is shared with you!`);
+
+
+  }
   const handleUpdate = (update: any) => {
     console.log('Received update:', update);
     console.log('Received update type:', update.type);
@@ -66,7 +71,19 @@ const BoardPage: React.FC = () => {
       ));
       toast.success(`Task "${update.data.update.name}" updated!`);
 
-    } else {
+    } else if (update.type === 'taskAdded') {
+      console.log('Handling taskAdded');
+      setTasks(prevTasks => [...prevTasks, update.data.update]);
+      toast.success(`New task "${update.data.update.name}" added!`);
+  
+
+
+    } else if (update.type === 'taskDelete') {
+      console.log('Handling taskDelete');
+      setTasks(prevTasks => prevTasks.filter(task => task.id !== update.data.taskId));
+      toast.success(`Task deleted successfully!`);
+  
+    }else {
       console.log('Unhandled update type:', update.type);
     }
   };
@@ -103,13 +120,26 @@ const BoardPage: React.FC = () => {
 
 
   const fetchProjects = async () => {
+    console.log("fetchProjects");
+
     try {
       const response = await api.getProjects();
       if (response.status === 200 && Array.isArray(response.data)) {
-        setProjects(response.data);
-        if (response.data.length > 0) {
-          setSelectedProject(response.data[0].id);
-        }
+        setProjects(prevProjects => {
+          const newProjects = response.data;
+
+          // Keep the selected project if it still exists in the new project list
+          if (selectedProject) {
+            return newProjects;
+          }
+
+          // If the selected project no longer exists, select the first project
+          if (newProjects.length <= 0) {
+            setSelectedProject(null)
+          }
+
+          return newProjects;
+        });
       }
     } catch (error) {
       console.error("Failed to fetch projects:", error);
@@ -138,7 +168,7 @@ const BoardPage: React.FC = () => {
       const response = await api.createTask(taskWithProject);
 
       if (response.status === 201 && response.data) {
-        setTasks(prevTasks => [...prevTasks, response.data]);
+        // setTasks(prevTasks => [...prevTasks, response.data]);
       } else {
         console.error('Unexpected response:', response);
       }
@@ -256,7 +286,7 @@ const BoardPage: React.FC = () => {
 
   return (
     <div className="w-full p-4">
-          <Toaster position="top-right" />
+      <Toaster position="top-right" />
 
       <h2 className="text-2xl font-bold mb-4">Welcome to ToDo List!</h2>
       <div className="flex justify-between items-center mb-4">
@@ -294,7 +324,7 @@ const BoardPage: React.FC = () => {
             <div className="flex flex-wrap gap-4">
               {tasks.map((task: Task) => (
                 <TaskCard
-                  key={task.id+task.description}
+                  key={task.id + task.description}
                   task={task}
                   onTaskUpdate={handleTaskUpdate}
                   onTaskDelete={handleTaskDelete}

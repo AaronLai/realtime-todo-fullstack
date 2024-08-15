@@ -1,34 +1,34 @@
 # Team-Based Todo List Application Features
 
 ## User Management (RESTful API)
-- [ ] User registration
-- [ ] User login
-- [ ] User logout
+- [x] User registration
+- [x] User login
+- [x] User logout
 - [ ] Delete user account
 
 ## TodoList Management
-- [ ] Create todoList (RESTful API)
+- [x] Create todoList (RESTful API)
 - [ ] Update project (RESTful API + WebSocket for real-time updates)
 - [ ] Delete project (RESTful API + WebSocket for real-time updates)
-- [ ] Add members (RESTful API + WebSocket for real-time updates)
-- [ ] View members (RESTful API)
+- [x] Add members (RESTful API + WebSocket for real-time updates)
+- [x] View members (RESTful API)
 
 ## Task Management
-- [ ] Create task (RESTful API + WebSocket for real-time updates)
-- [ ] View task details (RESTful API)
-- [ ] Update task (RESTful API + WebSocket for real-time updates)
-- [ ] Delete task (RESTful API + WebSocket for real-time updates)
-- [ ] List tasks (RESTful API)
+- [x] Create task (RESTful API + WebSocket for real-time updates)
+- [x] View task details (RESTful API)
+- [x] Update task (RESTful API + WebSocket for real-time updates)
+- [x] Delete task (RESTful API + WebSocket for real-time updates)
+- [x] List tasks (RESTful API)
 - [ ] Assign task to user (RESTful API + WebSocket for real-time updates)
-- [ ] Mark task as complete (RESTful API + WebSocket for real-time updates)
+- [x] Mark task as complete (RESTful API + WebSocket for real-time updates)
 - [ ] View task history(feeds) (RESTful API + WebSocket for real-time updates)
 
 ## Role and Permission Management (RESTful API)
-- [ ] Assign role to user in a project
-- [ ] View user's role in a project
+- [x] Assign role to user in a project
+- [x] View user's role in a project
 - [ ] Update user's role in a project
 - [ ] Remove user from project
-- [ ] List available roles
+- [x] List available roles
 - [ ] List available permissions
 - [ ] Create new permission
 - [ ] Delete permission
@@ -45,7 +45,7 @@
 - [ ] Generate user report
 
 ## Authentication and Authorization (RESTful API)
-- [ ] Authenticate user
+- [x] Authenticate user
 - [ ] Authorize user actions
 
 ## Audit Logging (RESTful API)
@@ -54,8 +54,8 @@
 ## Real-time Collaboration
 
 ### WebSocket Connection Management (WebSocket)
-- [ ] Establish WebSocket connection
-- [ ] Close WebSocket connection
+- [x] Establish WebSocket connection
+- [x] Close WebSocket connection
 - [ ] Handle WebSocket messages
 
 ### Shared TODO Lists (WebSocket)
@@ -67,7 +67,7 @@
 - [ ] Broadcast activity events in real-time (WebSocket)
 
 ### Real-time Task Updates (WebSocket)
-- [ ] Broadcast task updates in real-time
+- [x] Broadcast task updates in real-time
 
 ### Collaborative Editing (WebSocket)
 - [ ] Broadcast task edits in real-time
@@ -79,26 +79,26 @@
 - [ ] Broadcast presence updates in real-time
 
 ### Synchronization
-- [ ] Sync client state with server (WebSocket for real-time sync, RESTful API for initial state)
+- [x] Sync client state with server (WebSocket for real-time sync, RESTful API for initial state)
 - [ ] Resolve conflicts between client and server states (WebSocket for real-time resolution, RESTful API for complex resolutions)
 
 
 ## UI Development
 
 ### General UI
-- [ ] Design and implement responsive layout
-- [ ] Create navigation menu/sidebar
-- [ ] Implement dark/light mode toggle
+- [x] Design and implement responsive layout
+- [x] Create navigation menu/sidebar
+- [x] Implement dark/light mode toggle
 
 ### User Management UI
-- [ ] Create user registration form
-- [ ] Design login page
+- [x] Create user registration form
+- [x] Design login page
 - [ ] Develop user profile page
 - [ ] Implement account settings page
 
 ### TodoList Management UI
-- [ ] Design TodoList creation form
-- [ ] Create TodoList view/edit page
+- [x] Design TodoList creation form
+- [x] Create TodoList view/edit page
 - [ ] Implement TodoList deletion confirmation modal
 - [ ] Design member management interface
 

@@ -14,6 +14,16 @@ export class TaskService {
     console.log('TaskService -> createTask -> taskData', taskData);
     try {
       const task = await this.dataService.createTask(taskData);
+
+      this.client.emit('task_updated', { 
+        action :'TASK_ADDED' ,
+        taskId: task.id, 
+        update: task,
+        projectId: task.projectId // Assuming task has a projectId field
+      });
+
+
+
       return Response.success(task, 201);
     } catch (error) {
       console.log('TaskService -> createTask -> error', error);
@@ -43,7 +53,6 @@ export class TaskService {
            // Emit an event to RabbitMQ
            this.client.emit('task_updated', { 
             action :'TASK_UPDATED' ,
-
             taskId: id, 
             update: updatedTask,
             projectId: updatedTask.projectId // Assuming task has a projectId field
@@ -58,7 +67,16 @@ export class TaskService {
 
   async deleteTask(id: string): Promise<Response> {
     try {
+      const task = await this.dataService.findTask(id);
       await this.dataService.deleteTask(id);
+
+          // Emit an event to RabbitMQ
+          this.client.emit('task_updated', { 
+            action :'TASK_DELETED' ,
+            taskId: id, 
+            update:task,
+            projectId: task.projectId // Assuming task has a projectId field
+          });
       return Response.success('Task deleted successfully');
     } catch (error) {
       return Response.error('Failed to delete task', 500);

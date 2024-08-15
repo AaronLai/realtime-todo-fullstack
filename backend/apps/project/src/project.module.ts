@@ -7,11 +7,21 @@ import { AuthModule } from '@auth/auth/auth.module';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { rabbitmqConfig } from '@shared';
 import { ProjectGateway } from './project.gateway';
+import { JwtModule } from '@nestjs/jwt';
+import { WebsocketAuthGuard } from '@auth/auth/websocket-auth.guard';
 
 @Module({
   imports: [
     AuthModule,
     DatabaseModule,
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
+        signOptions: { expiresIn: '7d' },
+      }),
+      inject: [ConfigService],
+    }),
     ConfigModule.forRoot({
       envFilePath: `.env.${process.env.NODE_ENV || 'local'}`,
       isGlobal: true,
@@ -48,6 +58,6 @@ import { ProjectGateway } from './project.gateway';
     ]),
   ],
   controllers: [ProjectController],
-  providers: [ProjectService,ProjectGateway],
+  providers: [ProjectService,ProjectGateway,WebsocketAuthGuard],
 })
 export class ProjectModule {}

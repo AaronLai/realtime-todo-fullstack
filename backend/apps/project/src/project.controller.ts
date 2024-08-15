@@ -16,7 +16,7 @@ export class ProjectController {
   constructor(private readonly projectService: ProjectService,
     private readonly projectGateway: ProjectGateway
 
-  ) {}
+  ) { }
 
   @Post()
   @ApiOperation({ summary: 'Create a new project' })
@@ -52,12 +52,14 @@ export class ProjectController {
   @ApiResponse({ status: 404, description: 'Project or User not found.' })
   @UseGuards(JwtAuthGuard)
   async assignUserToProject(
+    @UserPayload() user: any,
     @Param('id') projectId: string,
     @Param('role') role: string,
     @Body('username') username: string
   ): Promise<Response> {
     try {
-      const result = await this.projectService.assignUserToProjectWithRole(username, projectId,role);
+      console.log(user);
+      const result = await this.projectService.assignUserToProjectWithRole(user.userId, username, projectId, role);
       return result;
     } catch (error) {
       return Response.error('An error occurred while assigning the user to the project', 500);
@@ -66,28 +68,6 @@ export class ProjectController {
 
 
 
-  @EventPattern(rabbitmqConfig.routingKeys.projectRouting)
-  async handleProjectMessages(data: any) {
-    console.log('Received project message:', data);
-    if (data.action === 'CREATE_DEFAULT_PROJECT') {
-      const projectWithCreator = {
-        name: 'Todo List',
-        description: 'This is a your first  todolist ',
-        createdBy: data.userId
-      };
-      const project = await this.projectService.createProjectAndAssignRole(projectWithCreator);
-    }
-  }
-  @EventPattern('task_updated')
-  async handleTaskMessages(data: any) {
-    console.log('Received task message:', data);
-    if (data.action === 'TASK_UPDATED') {
-      const { taskId, update, projectId } = data;
-
-      this.projectGateway.sendTaskUpdate(projectId, taskId, update);
-
-    }
-  }
 
 
   @Get('mine')
@@ -106,18 +86,6 @@ export class ProjectController {
     }
   }
 
-
-  @Get(':id')
-  @ApiOperation({ summary: 'Get a project by id' })
-  @ApiParam({ name: 'id', type: 'string', description: 'Project UUID' })
-  @ApiResponse({ status: 200, description: 'The project has been successfully retrieved.', type: ProjectResponseDto })
-  @ApiResponse({ status: 404, description: 'Project not found.' })
-  @ApiResponse({ status: 401, description: 'Unauthorized.' })
-  @UseGuards(JwtAuthGuard)
-
-  async getProject(@Param('id') id: string): Promise<Response> {
-    return this.projectService.getProject(id);
-  }
 
   @Put(':id')
   @ApiOperation({ summary: 'Update a project' })
@@ -147,7 +115,49 @@ export class ProjectController {
   }
 
 
-  
+  @EventPattern(rabbitmqConfig.routingKeys.projectRouting)
+  async handleProjectMessages(data: any) {
+    console.log('Received project message:', data);
+    if (data.action === 'CREATE_DEFAULT_PROJECT') {
+      const projectWithCreator = {
+        name: 'Todo List',
+        description: 'This is a your first todolist ',
+        createdBy: data.userId
+      };
+      const project = await this.projectService.createProjectAndAssignRole(projectWithCreator);
+    } else if (data.action === 'PROJECT_ASSIGNED') {
+      const { projectId, userId } = data;
+      //  projectId: projectId , userId: user.id 
+      this.projectGateway.sendProjectAssignedUpdate(projectId, userId);
+
+    }
+  }
+
+  @EventPattern('task_updated')
+  async handleTaskUpdateEvent(data: any) {
+    console.log('Received task message:', data);
+    if (data.action === 'TASK_UPDATED') {
+      const { taskId, update, projectId } = data;
+
+      this.projectGateway.sendTaskUpdate(projectId, taskId, update);
+
+    } else if (data.action === 'TASK_DELETED') {
+      const { taskId, update, projectId } = data;
+      this.projectGateway.sendTaskDelete(projectId, taskId, update);
+
+    }else if (data.action === 'TASK_ADDED') {
+      const { taskId, update, projectId } = data;
+      this.projectGateway.sendTaskAdded(projectId, taskId, update);
+
+    }
+
+
+
+
+    
+  }
+
+
 }
 
 

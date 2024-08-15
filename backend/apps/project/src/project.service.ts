@@ -9,6 +9,7 @@ import { UserProjectRole } from '@data/entities/user-project-role.entity';
 import { DataService } from '@data/data.service';
 import { CreateProjectDto } from './project.dto';
 import { ClientProxy } from '@nestjs/microservices';
+import { rabbitmqConfig } from '@shared';
 
 @Injectable()
 export class ProjectService {
@@ -64,6 +65,9 @@ export class ProjectService {
         userProjectRole.user = user;
         userProjectRole.project = savedProject;
         userProjectRole.role = role;
+        userProjectRole.createdAt = new Date();
+        userProjectRole.updatedAt = new Date();
+        userProjectRole.createdById = user.id;
 
         await transactionalEntityManager.save(UserProjectRole, userProjectRole);
       savedProject.createdById = user.id;
@@ -77,7 +81,7 @@ export class ProjectService {
   }
 
 
-  async assignUserToProjectWithRole(username: string, projectId: string, role: string): Promise<Response> {
+  async assignUserToProjectWithRole(userId:string,  username: string, projectId: string, role: string): Promise<Response> {
     return await this.entityManager.transaction(async transactionalEntityManager => {
       try {
         // Fetch user
@@ -111,9 +115,13 @@ export class ProjectService {
         userProjectRole.user = user;
         userProjectRole.project = project;
         userProjectRole.role = specifiedRole;
+        userProjectRole.createdAt = new Date();
+        userProjectRole.updatedAt = new Date();
+        userProjectRole.createdById = userId;
   
         await transactionalEntityManager.save(UserProjectRole, userProjectRole);
-  
+        this.client.emit(rabbitmqConfig.routingKeys.projectRouting, { action :"PROJECT_ASSIGNED",projectId: projectId , userId: user.id  });
+
         return Response.success(`User successfully assigned to project with role "${role}"`);
       } catch (error) {
         console.error('Error in assignUserToProject:', error);
