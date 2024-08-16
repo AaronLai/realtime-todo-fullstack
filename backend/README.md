@@ -1,73 +1,101 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Realtime TodoList Microservices App
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Project Overview
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+This project is a realtime todolist application built using a microservices architecture. It allows users to create projects, manage tasks within those projects, and collaborate in real-time. The application is designed to be scalable, maintainable, and efficient.
 
-## Description
+## Features
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- User authentication (sign in and registration)
+- Project management (create, update, delete projects)
+- Task management (create, update, delete tasks within projects)
+- Real-time updates using WebSockets
+- Microservices architecture for improved scalability and maintainability
 
-## Installation
+## Tech Stack
 
-```bash
-$ yarn install
+- Backend: NestJS
+- Database: Not specified (likely PostgreSQL or MongoDB)
+- Message Broker: RabbitMQ
+- Real-time Communication: WebSockets (Socket.io)
+- API Documentation: Swagger
+- Authentication: JWT (JSON Web Tokens)
+
+## Microservices
+
+The application is divided into several microservices:
+
+1. **User Service**: Handles user authentication and registration.
+2. **Project Service**: Manages projects and user assignments.
+3. **Task Service**: Handles task creation, updates, and deletion.
+4. **Gateway Service**: Acts as an API Gateway and handles WebSocket connections.
+
+## API Endpoints
+
+### User Service
+
+- `POST /users/signin`: User sign in
+- `POST /users/register`: User registration
+
+### Project Service
+
+- `POST /projects`: Create a new project
+- `POST /projects/:id/assign/:role`: Assign a user to a project with a specific role
+- `GET /projects/mine`: Get projects for the authenticated user
+- `PUT /projects/:id`: Update a project
+- `GET /projects/:id/users`: Get users for a specific project
+
+### Task Service
+
+- `POST /tasks`: Create a new task
+- `GET /tasks/:id`: Get a task by id
+- `PUT /tasks/:id`: Update a task
+- `DELETE /tasks/:id`: Delete a task
+- `GET /tasks/project/:projectId`: Get tasks by project
+
+## Real-time Features
+
+The application uses WebSockets to provide real-time updates:
+
+- Task updates are broadcast to all users in the project
+- Project assignments are communicated in real-time
+
+## Message Queue
+
+RabbitMQ is used for asynchronous communication between microservices:
+
+- Creating default projects for new users
+- Handling project assignments
+- Broadcasting task updates
+
+## API Documentation
+
+API documentation is available through Swagger. After starting the application, visit `/api` to view the interactive API documentation.
+
+## Environment Variables
+
+To set up the environment variables:
+
+1. Locate the `.env.local.example` file in the project root.
+2. Copy the file and rename it to `.env.local`.
+3. Update the values in `.env.local` according to your local setup.
+
+Here's an example of the contents of `.env.local`:
+
+```
+JWT_SECRET=local-secret-key
+USER_SERVICE_PORT=4001
+PROJECT_SERVICE_PORT=4002
+TASK_SERVICE_PORT=4003
+DB_NAME=tododb
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+DB_HOST=localhost
+DB_PORT=5432
+DB_SYNC=true
+RABBITMQ_URL=amqp://localhost:5672
+DEFAULT_PROJECT_ROLE=Admin
 ```
 
-## Running the app
+Make sure to adjust these values based on your local development environment.
 
-```bash
-# development
-$ yarn run start
-
-# watch mode
-$ yarn run start:dev
-
-# production mode
-$ yarn run start:prod
-```
-
-## Test
-
-```bash
-# unit tests
-$ yarn run test
-
-# e2e tests
-$ yarn run test:e2e
-
-# test coverage
-$ yarn run test:cov
-```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
