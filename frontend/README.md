@@ -159,13 +159,5 @@ Tasks can be added, updated, and deleted in real-time. The `AddTaskForm` compone
 ### User Collaboration
 The application supports adding users to projects with different roles. The `handleAddUser` function in `BoardPage` manages this process.
 
-## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
 
