@@ -15,7 +15,7 @@ This project is a realtime todolist application built using a microservices arch
 ## Tech Stack
 
 - Backend: NestJS
-- Database: Not specified (likely PostgreSQL or MongoDB)
+- Database: PostgreSQL
 - Message Broker: RabbitMQ
 - Real-time Communication: WebSockets (Socket.io)
 - API Documentation: Swagger
